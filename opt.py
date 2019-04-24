@@ -41,8 +41,28 @@ def conjugate_gradient(p, x, tolerance=1e-6):
         x_prv = x
         x = x_prv + w * s
         beta = (p.grad(x) - p.grad(x_prv)) @ p.grad(x).T \
-             / p.grad(x_prv) @ p.grad(x_prv).T
+            / p.grad(x_prv) @ p.grad(x_prv).T
         s = -p.grad(x).T + beta * s
+
+    return x
+
+
+def secant(p, x, tolerance=1e-6, H=None):
+    """Secant optimization algorithm"""
+
+    if H is None:
+        H = np.eye(np.max(np.shape(x)))
+
+    while np.linalg.norm(p.grad(x)) > tolerance:
+        s = -H @ p.grad(x).T
+        w = _step_size(p, x, s)
+        x_prv = x
+        x = x_prv + w * s
+        # Davidon-Fletcher-Powell (DFP) Algorithm
+        dx = x - x_prv
+        dg = p.grad(x) - p.grad(x_prv)
+        H = H + (dx @ dx.T) / (dx.T @ dg.T) \
+            - ((H @ dg.T) @ (H @ dg.T).T) / (dg @ H @ dg.T)
 
     return x
 

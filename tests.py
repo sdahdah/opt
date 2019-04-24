@@ -4,8 +4,40 @@ import opt
 
 np.set_printoptions(precision=20)
 
+class TestProblemA(unittest.TestCase):
 
-class TestProblem(unittest.TestCase):
+    def setUp(self):
+        a = 5
+        b = np.array([[1], [4], [5], [4], [2], [1]])
+        C = 2 * np.array([[9,  1,  7,  5,  4,  7],
+                          [1, 11,  4,  2,  7,  5],
+                          [7,  4, 13,  5,  0,  7],
+                          [5,  2,  5, 17,  1,  9],
+                          [4,  7,  0,  1, 21, 15],
+                          [7,  5,  7,  9, 15, 27]])
+
+        v = lambda x : a + b.T @ x + 0.5 * x.T @ C @ x
+        del_v = lambda x : b.T + x.T @ C
+        self.p = opt.Problem(v, del_v)
+        self.x_opt = -np.linalg.solve(C, b)
+
+    def test_sd(self):
+        x = np.array([[0], [0], [0], [0], [0], [0]])
+        x_opt = opt.steepest_descent(self.p, x)
+        self.assertTrue(np.linalg.norm(x_opt - self.x_opt) < 1e-6)
+
+    def test_cg(self):
+        x = np.array([[0], [0], [0], [0], [0], [0]])
+        x_opt = opt.conjugate_gradient(self.p, x)
+        self.assertTrue(np.linalg.norm(x_opt - self.x_opt) < 1e-6)
+
+    def test_sec(self):
+        x = np.array([[0], [0], [0], [0], [0], [0]])
+        x_opt = opt.secant(self.p, x)
+        self.assertTrue(np.linalg.norm(x_opt - self.x_opt) < 1e-6)
+
+
+class TestBasics(unittest.TestCase):
 
     def test_scalar_problem(self):
         v = lambda x: x * x

@@ -50,8 +50,8 @@ def conjugate_gradient(p, x, tolerance=1e-6):
 def _step_size(p, x, s, gamma=1.5, mu=0.8):
     """Armijo algorithm for computing step size"""
 
-    k_g = 0 # Power of gamma
-    k_m = 0 # Power of mu
+    k_g = 0  # Power of gamma
+    k_m = 0  # Power of mu
 
     def v_bar(w):
         return p.cost(x) + 0.5 * w * p.grad(x) @ s

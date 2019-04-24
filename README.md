@@ -13,3 +13,8 @@ make
 ```bash
 make test
 ```
+
+## TODO
+
+- [ ] Cone condition
+- [ ] Max number of iterations

@@ -70,6 +70,8 @@ def secant(p, x, tolerance=1e-6, H=None):
 def _step_size(p, x, s, gamma=1.5, mu=0.8):
     """Armijo algorithm for computing step size"""
 
+    w = 1  # Default step size
+
     k_g = 0  # Power of gamma
     k_m = 0  # Power of mu
 

@@ -45,6 +45,16 @@ class TestProblem(unittest.TestCase):
         x_sd = opt.steepest_descent(p, x)
         self.assertTrue(np.linalg.norm(x_sd - x_opt) < 1e-6)
 
+    def test_cg(self):
+        P = np.array([[1, 0, 0], [0, 2, 0], [0, 0, 4]])
+        v = lambda x: 0.5 * x.T @ P @ x
+        del_v = lambda x: x.T @ P
+        p = opt.Problem(v, del_v)
+        x = np.array([[1], [1], [1]])
+        x_opt = np.array([[0], [0], [0]])
+        x_cg = opt.conjugate_gradient(p, x)
+        self.assertTrue(np.linalg.norm(x_cg - x_opt) < 1e-6)
+
 
 if __name__ == '__main__':
     unittest.main()

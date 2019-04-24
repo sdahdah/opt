@@ -1,5 +1,7 @@
-nose
+# Development
 sphinx
+flake8
+# Dependencies
 numpy
 scipy
 matplotlib

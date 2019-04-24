@@ -21,6 +21,17 @@ class Problem:
             return self._grad
 
 
+def steepest_descent(p, x, tolerance=1e-6):
+    """Steepest descent optimization algorithm"""
+
+    while np.linalg.norm(p.grad(x)) > tolerance:
+        s = -p.grad(x).T
+        w = _step_size(p, x, s)
+        x = x + w * s
+
+    return x
+
+
 def _step_size(p, x, s, gamma=1.5, mu=0.8):
     """Armijo algorithm for computing step size"""
 

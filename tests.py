@@ -35,6 +35,16 @@ class TestProblem(unittest.TestCase):
         w_armijo = opt._step_size(p, x, s)
         self.assertTrue(abs(w_armijo - w_ideal) / w_ideal < 0.1)
 
+    def test_sd(self):
+        P = np.array([[1, 0, 0], [0, 2, 0], [0, 0, 4]])
+        v = lambda x: 0.5 * x.T @ P @ x
+        del_v = lambda x: x.T @ P
+        p = opt.Problem(v, del_v)
+        x = np.array([[1], [1], [1]])
+        x_opt = np.array([[0], [0], [0]])
+        x_sd = opt.steepest_descent(p, x)
+        self.assertTrue(np.linalg.norm(x_sd - x_opt) < 1e-6)
+
 
 if __name__ == '__main__':
     unittest.main()

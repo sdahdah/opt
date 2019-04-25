@@ -3,3 +3,6 @@ init:
 
 test:
 	python -m unittest tests.py
+
+profile:
+	python -m unittest profl.py

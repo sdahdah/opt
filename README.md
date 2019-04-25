@@ -18,4 +18,4 @@ make test
 
 - [ ] Cone condition
 - [ ] Max number of iterations
-- [ ] Fix instability with CG on Problem B
+- [x] Fix instability with CG on Problem B

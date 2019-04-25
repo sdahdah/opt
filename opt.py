@@ -43,18 +43,18 @@ class Problem:
     def eq_const(self, x=None):
         if self._eq_const is not None:
             if x is not None:
-                return np.array([[eq(x)] for eq in self._eq_const])
+                return np.array([eq(x) for eq in self._eq_const])
             else:
-                return np.array([[eq] for eq in self._eq_const])
+                return np.array([eq for eq in self._eq_const])
         else:
             return None
 
     def ineq_const(self, x=None):
         if self._ineq_const is not None:
             if x is not None:
-                return np.array([[ineq(x)] for ineq in self._ineq_const])
+                return np.array([ineq(x) for ineq in self._ineq_const])
             else:
-                return np.array([[ineq] for ineq in self._ineq_const])
+                return np.array([ineq for ineq in self._ineq_const])
         else:
             return None
 
@@ -174,13 +174,10 @@ def barrier_function(p, x0, tol=1e-6, tol_const=1e-4, sigma_max=1e6, r_min=1e-6,
             cost = cost + 0.5 * sigma * np.linalg.norm(p.eq_const(x))**2
         if p.ineq_const() is not None:
             ineq_x = p.ineq_const(x)
-            if mode == 'inv':
-                cost = cost + r * np.sum(np.reciprocal(ineq_x))
-            elif mode == 'log':
+            if mode == 'log':
                 cost = cost - r * np.sum(np.log(ineq_x))
             else:
-                # TODO Handle this
-                print('INVALID MODE')
+                cost = cost + r * np.sum(np.reciprocal(ineq_x))
         return cost
 
     def cost_norm(x):

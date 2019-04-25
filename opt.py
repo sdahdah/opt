@@ -105,4 +105,4 @@ def _fd_grad(p, x, h=1e-6):
     grad = ((p.cost(x + h * np.eye(dim)[:, [i]]) - p.cost(x)) / h
             for i in range(0, dim))
 
-    return np.expand_dims(np.fromiter(grad, float), axis=0)
+    return np.expand_dims(np.fromiter(grad, np.float), axis=0)

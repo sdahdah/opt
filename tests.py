@@ -78,17 +78,17 @@ class TestProblemB(unittest.TestCase):
         self.p = opt.Problem(v)
 
     def test_sd(self):
-        x = np.array([[2], [2]])
+        x = np.array([[10], [10]])
         x_opt = opt.steepest_descent(self.p, x, tolerance=1e-4)
         self.assertTrue(np.linalg.norm(x_opt - self.x_opt) < 1e-3)
 
     def test_cg(self):
-        x = np.array([[2], [2]])
+        x = np.array([[10], [10]])
         x_opt = opt.conjugate_gradient(self.p, x, tolerance=1e-4)
         self.assertTrue(np.linalg.norm(x_opt - self.x_opt) < 1e-3)
 
     def test_sec(self):
-        x = np.array([[2], [2]])
+        x = np.array([[10], [10]])
         x_opt = opt.secant(self.p, x, tolerance=1e-4)
         self.assertTrue(np.linalg.norm(x_opt - self.x_opt) < 1e-3)
 

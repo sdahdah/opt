@@ -30,40 +30,63 @@ class Problem:
             return self._grad
 
 
-def steepest_descent(p, x, tolerance=1e-6):
+def steepest_descent(p, x, tolerance=1e-6, max_iter=999):
     """Steepest descent optimization algorithm"""
 
+    i = 0
     while np.linalg.norm(p.grad(x)) > tolerance:
+        if i > max_iter:
+            break
         s = -p.grad(x).T
         w = _step_size(p, x, s)
         x = x + w * s
+        i += 1
 
     return x
 
 
-def conjugate_gradient(p, x, tolerance=1e-6):
+def conjugate_gradient(p, x, tolerance=1e-6, rst_iter=99, max_iter=999):
     """Conjugate gradient optimization algorithm"""
 
+    i = 0
     s = -p.grad(x).T
     while np.linalg.norm(p.grad(x)) > tolerance:
+        if i > rst_iter:
+            i = 0
+            s = -p.grad(x).T
+        elif not _cone_condition(p, x, s):
+            i = 0
+            s = -p.grad(x).T
+        elif i > max_iter:
+            break
         w = _step_size(p, x, s)
         x_prv = x
         x = x_prv + w * s
         beta = ((p.grad(x) - p.grad(x_prv)) @ p.grad(x).T) \
             / (p.grad(x_prv) @ p.grad(x_prv).T)
         s = -p.grad(x).T + beta * s
+        i += 1
 
     return x
 
 
-def secant(p, x, tolerance=1e-6, H=None):
+def secant(p, x, tolerance=1e-6, H=None, rst_iter=99, max_iter=999):
     """Secant optimization algorithm"""
 
     if H is None:
         H = np.eye(np.max(np.shape(x)))
 
+    i = 0
     while np.linalg.norm(p.grad(x)) > tolerance:
         s = -H @ p.grad(x).T
+        if i > rst_iter:
+            i = 0
+            s = -p.grad(x).T
+        elif not _cone_condition(p, x, s):
+            i = 0
+            s = -p.grad(x).T
+        elif i > max_iter:
+            break
         w = _step_size(p, x, s)
         x_prv = x
         x = x_prv + w * s
@@ -72,6 +95,7 @@ def secant(p, x, tolerance=1e-6, H=None):
         dg = p.grad(x) - p.grad(x_prv)
         H = H + (dx @ dx.T) / (dx.T @ dg.T) \
             - ((H @ dg.T) @ (H @ dg.T).T) / (dg @ H @ dg.T)
+        i += 1
 
     return x
 
@@ -110,3 +134,13 @@ def _fd_grad(p, x, h=1e-6):
                for i in range(0, dim))
     grad = np.expand_dims(np.fromiter(grad_gen, np.float), axis=0)
     return grad
+
+
+def _cone_condition(p, x, s, theta=89):
+    """Check the cone condition at a point"""
+
+    gx = p.grad(x)
+    cos_phi = (-gx @ s) / (np.linalg.norm(s) * np.linalg.norm(gx))
+    cos_theta = np.cos(theta * 2 * np.pi / 360)
+
+    return (cos_phi > cos_theta)

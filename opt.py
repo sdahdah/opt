@@ -23,7 +23,6 @@ class Problem:
             self._eq_const = eq_const
         if ineq_const is not None:
             self._ineq_const = ineq_const
-        if 
 
     def cost(self, x=None):
         if x is not None:

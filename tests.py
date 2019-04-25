@@ -221,5 +221,31 @@ class TestBasics(unittest.TestCase):
         self.assertTrue(np.linalg.norm(g_fd - g_ex) < 1e-3)
 
 
+class TestBasicConstraints(unittest.TestCase):
+
+    def setUp(self):
+        # Example 12.1.5 from Fletcher
+        v = lambda x: -x[0] - x[1]
+        del_v = lambda x: np.ndarray([[-1, -1]])
+        c = [lambda x: 1 - x[0]**2 - x[1]**2]
+        self.p = opt.Problem(v, eq_const=c)
+
+    def test_eq_const_init(self):
+        v = lambda x: -x[0] - x[1]
+        del_v = lambda x: np.ndarray([[-1, -1]])
+        c1 = lambda x: x + 1
+        c2 = lambda x: x + 2
+        c = [c1, c2]
+        p = opt.Problem(v, grad=del_v, eq_const=c)
+        self.assertTrue(p.eq_const(4)[0] == 5)
+        self.assertTrue(p.eq_const(4)[1] == 6)
+
+    def test_eq_const(self):
+        x0 = np.array([[0], [0]])
+        x = opt.penalty_function(self.p, x0, tol=1e-4)
+        x_opt = np.array([[0.7071318], [0.7071093]])
+        self.assertTrue(np.linalg.norm(x_opt - x) < 1e-4)
+
+
 if __name__ == '__main__':
     unittest.main()

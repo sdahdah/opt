@@ -36,6 +36,12 @@ class Problem:
         else:
             return self._grad
 
+    def eq_const(self, x=None):
+        if x is not None:
+            return np.array([[eq(x)] for eq in self._eq_const])
+        else:
+            return np.array([[eq] for eq in self._eq_const])
+
 
 def steepest_descent(p, x, tol=1e-6, max_iter=999):
     """Steepest descent optimization algorithm"""
@@ -103,6 +109,24 @@ def secant(p, x, tol=1e-6, H=None, rst_iter=99, max_iter=999):
         H = H + (dx @ dx.T) / (dx.T @ dg.T) \
             - ((H @ dg.T) @ (H @ dg.T).T) / (dg @ H @ dg.T)
         i += 1
+
+    return x
+
+
+def penalty_function(p, x0, tol=1e-6, tol_const=1e-4):
+    """Constrained optimization algorithm using penalty function"""
+
+    sigma = 1
+
+    def phi(sigma, x):
+        return p.cost(x) + 0.5 * sigma * np.linalg.norm(p.eq_const(x))**2
+
+    x = x0
+
+    while np.linalg.norm(p.eq_const(x)) > tol_const:
+        up = Problem(partial(phi, sigma))
+        x = steepest_descent(up, x0, tol=tol)
+        sigma *= 10
 
     return x
 

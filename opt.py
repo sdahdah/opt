@@ -8,7 +8,7 @@ class Problem:
     def __init__(self, cost, grad=None, grad_step=None):
         self._cost = cost
         if grad is None and grad_step is None:
-            self._grad_step = 1e-6
+            self._grad_step = 1e-8
             self._grad = partial(_fd_grad, self, h=self._grad_step)
         elif grad is None and grad_step is not None:
             self._grad_step = grad_step
@@ -49,8 +49,8 @@ def conjugate_gradient(p, x, tolerance=1e-6):
         w = _step_size(p, x, s)
         x_prv = x
         x = x_prv + w * s
-        beta = (p.grad(x) - p.grad(x_prv)) @ p.grad(x).T \
-            / p.grad(x_prv) @ p.grad(x_prv).T
+        beta = ((p.grad(x) - p.grad(x_prv)) @ p.grad(x).T) \
+            / (p.grad(x_prv) @ p.grad(x_prv).T)
         s = -p.grad(x).T + beta * s
 
     return x
@@ -84,8 +84,12 @@ def _step_size(p, x, s, gamma=1.5, mu=0.8):
     k_g = 0  # Power of gamma
     k_m = 0  # Power of mu
 
+    # Precompute cost and gradient to save time
+    vx = p.cost(x)
+    gx = p.grad(x)
+
     def v_bar(w):
-        return p.cost(x) + 0.5 * w * p.grad(x) @ s
+        return vx + 0.5 * w * gx @ s
 
     while p.cost(x + gamma**k_g * s) < v_bar(gamma**k_g):
         k_g += 1
@@ -102,7 +106,7 @@ def _fd_grad(p, x, h=1e-6):
     """Finite difference approximation of the gradient"""
 
     dim = np.max(np.shape(x))
-    grad = ((p.cost(x + h * np.eye(dim)[:, [i]]) - p.cost(x)) / h
-            for i in range(0, dim))
-
-    return np.expand_dims(np.fromiter(grad, np.float), axis=0)
+    grad_gen = ((p.cost(x + h * np.eye(dim)[:, [i]]) - p.cost(x)) / h
+               for i in range(0, dim))
+    grad = np.expand_dims(np.fromiter(grad_gen, np.float), axis=0)
+    return grad

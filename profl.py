@@ -20,7 +20,7 @@ class ProfileProblemA(unittest.TestCase):
                           [4,  7,  0,  1, 21, 15],
                           [7,  5,  7,  9, 15, 27]])
         v = lambda x : a + b.T @ x + 0.5 * x.T @ C @ x
-        self.p = opt.Problem(v)
+        self.p = opt.Problem(v, grad_step=1e-8)
         self.x_opt = -np.linalg.solve(C, b)
         self.pr = cProfile.Profile()
         self.pr.enable()
@@ -33,17 +33,29 @@ class ProfileProblemA(unittest.TestCase):
 
     def test_sd_p(self):
         x = np.array([[0], [0], [0], [0], [0], [0]])
-        x_opt = opt.steepest_descent(self.p, x, tolerance=1e-3)
+        x_opt = opt.steepest_descent(self.p, x, tolerance=1e-6)
+        print('sd')
+        print(x_opt)
+        print(self.x_opt)
+        print()
         self.assertTrue(np.linalg.norm(x_opt - self.x_opt) < 1e-3)
 
     def test_cg_p(self):
         x = np.array([[0], [0], [0], [0], [0], [0]])
-        x_opt = opt.conjugate_gradient(self.p, x, tolerance=1e-3)
+        x_opt = opt.conjugate_gradient(self.p, x, tolerance=1e-6)
+        print('cg')
+        print(x_opt)
+        print(self.x_opt)
+        print()
         self.assertTrue(np.linalg.norm(x_opt - self.x_opt) < 1e-3)
 
     def test_sec_p(self):
         x = np.array([[0], [0], [0], [0], [0], [0]])
-        x_opt = opt.secant(self.p, x, tolerance=1e-3)
+        x_opt = opt.secant(self.p, x, tolerance=1e-6)
+        print('sec')
+        print(x_opt)
+        print(self.x_opt)
+        print()
         self.assertTrue(np.linalg.norm(x_opt - self.x_opt) < 1e-3)
 
 

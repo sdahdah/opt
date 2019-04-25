@@ -37,6 +37,38 @@ class TestProblemA(unittest.TestCase):
         self.assertTrue(np.linalg.norm(x_opt - self.x_opt) < 1e-6)
 
 
+class TestFdProblemA(unittest.TestCase):
+
+    def setUp(self):
+        a = 5
+        b = np.array([[1], [4], [5], [4], [2], [1]])
+        C = 2 * np.array([[9,  1,  7,  5,  4,  7],
+                          [1, 11,  4,  2,  7,  5],
+                          [7,  4, 13,  5,  0,  7],
+                          [5,  2,  5, 17,  1,  9],
+                          [4,  7,  0,  1, 21, 15],
+                          [7,  5,  7,  9, 15, 27]])
+
+        v = lambda x : a + b.T @ x + 0.5 * x.T @ C @ x
+        self.p = opt.Problem(v)
+        self.x_opt = -np.linalg.solve(C, b)
+
+    def test_sd(self):
+        x = np.array([[0], [0], [0], [0], [0], [0]])
+        x_opt = opt.steepest_descent(self.p, x, tolerance=1e-4)
+        self.assertTrue(np.linalg.norm(x_opt - self.x_opt) < 1e-3)
+
+    def test_cg(self):
+        x = np.array([[0], [0], [0], [0], [0], [0]])
+        x_opt = opt.conjugate_gradient(self.p, x, tolerance=1e-4)
+        self.assertTrue(np.linalg.norm(x_opt - self.x_opt) < 1e-3)
+
+    def test_sec(self):
+        x = np.array([[0], [0], [0], [0], [0], [0]])
+        x_opt = opt.secant(self.p, x, tolerance=1e-4)
+        self.assertTrue(np.linalg.norm(x_opt - self.x_opt) < 1e-3)
+
+
 class TestBasics(unittest.TestCase):
 
     def test_scalar_problem(self):
@@ -54,6 +86,34 @@ class TestBasics(unittest.TestCase):
         self.assertEqual(p.cost(np.array([[1], [1], [1]])), 3.5)
         self.assertSequenceEqual(p.grad(np.array([[1], [1], [1]])).tolist(),
                                  np.array([[1, 2, 4]]).tolist())
+
+    def test_fd_problem(self):
+        P = np.array([[1, 0, 0], [0, 2, 0], [0, 0, 4]])
+        v = lambda x: 0.5 * x.T @ P @ x
+        del_v = lambda x: x.T @ P
+        x = np.array([[1], [2], [3]])
+        # Default step
+        p = opt.Problem(v)
+        # Exact gradient
+        g_ex = del_v(x)
+        # Gradient evaluated at x
+        g_fd1 = p.grad(x)
+        # Get gradient then evaluate at x
+        g = p.grad
+        g_fd2 = g(x)
+        self.assertTrue(np.linalg.norm(g_fd1 - g_ex) < 1e-3)
+        self.assertTrue(np.linalg.norm(g_fd2 - g_ex) < 1e-3)
+        # Specific step
+        p = opt.Problem(v, grad_step=1e-9)
+        # Exact gradient
+        g_ex = del_v(x)
+        # Gradient evaluated at x
+        g_fd1 = p.grad(x)
+        # Get gradient then evaluate at x
+        g = p.grad
+        g_fd2 = g(x)
+        self.assertTrue(np.linalg.norm(g_fd1 - g_ex) < 1e-3)
+        self.assertTrue(np.linalg.norm(g_fd2 - g_ex) < 1e-3)
 
     def test_step_size(self):
         P = np.array([[1, 0, 0], [0, 2, 0], [0, 0, 4]])
@@ -96,6 +156,16 @@ class TestBasics(unittest.TestCase):
         x_opt = np.array([[0], [0], [0]])
         x_sec = opt.secant(p, x)
         self.assertTrue(np.linalg.norm(x_sec - x_opt) < 1e-6)
+
+    def test_fd_grad(self):
+        P = np.array([[1, 0, 0], [0, 2, 0], [0, 0, 4]])
+        v = lambda x: 0.5 * x.T @ P @ x
+        del_v = lambda x: x.T @ P
+        p = opt.Problem(v, del_v)
+        x = np.array([[1], [2], [3]])
+        g_ex = p.grad(x)
+        g_fd = opt._fd_grad(p, x, h=1e-9)
+        self.assertTrue(np.linalg.norm(g_fd - g_ex) < 1e-3)
 
 
 if __name__ == '__main__':

@@ -93,6 +93,35 @@ class TestProblemB(unittest.TestCase):
         self.assertTrue(np.linalg.norm(x_opt - self.x_opt) < 1e-3)
 
 
+class TestProblemC(unittest.TestCase):
+
+    def setUp(self):
+        a = 1
+        b = np.array([[1], [2]])
+        C = np.array([[12, 3], [3, 10]])
+        v = lambda x : a + b.T @ x + x.T @ C @ x \
+                       + 10 * np.log(1 + x[0]**4) * np.sin(100 * x[0]) \
+                       + 10 * np.log(1 + x[1]**4) * np.cos(100 * x[1])
+        # TODO Verify that this is the real optimum
+        self.x_opt = np.array([[-0.01773056364041071], [-0.09577801844122487]])
+        self.p = opt.Problem(v)
+
+    def test_sd(self):
+        x = np.array([[0], [0]])
+        x_opt = opt.steepest_descent(self.p, x, tolerance=1e-4)
+        self.assertTrue(np.linalg.norm(x_opt - self.x_opt) < 1e-3)
+
+    def test_cg(self):
+        x = np.array([[0], [0]])
+        x_opt = opt.conjugate_gradient(self.p, x, tolerance=1e-4)
+        self.assertTrue(np.linalg.norm(x_opt - self.x_opt) < 1e-3)
+
+    def test_sec(self):
+        x = np.array([[0], [0]])
+        x_opt = opt.secant(self.p, x, tolerance=1e-4)
+        self.assertTrue(np.linalg.norm(x_opt - self.x_opt) < 1e-3)
+
+
 class TestBasics(unittest.TestCase):
 
     def test_scalar_problem(self):

@@ -132,7 +132,7 @@ def _fd_grad(p, x, h=1e-6):
     dim = np.max(np.shape(x))
     grad_gen = ((p.cost(x + h * np.eye(dim)[:, [i]]) - p.cost(x)) / h
                for i in range(0, dim))
-    grad = np.expand_dims(np.fromiter(grad_gen, np.float), axis=0)
+    grad = np.expand_dims(np.fromiter(grad_gen, np.float64), axis=0)
     return grad
 
 

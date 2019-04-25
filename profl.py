@@ -33,7 +33,7 @@ class ProfileProblemA(unittest.TestCase):
 
     def test_sd_p(self):
         x = np.array([[0], [0], [0], [0], [0], [0]])
-        x_opt = opt.steepest_descent(self.p, x, tolerance=1e-6)
+        x_opt = opt.steepest_descent(self.p, x, tol=1e-6)
         print('sd')
         print(x_opt)
         print(self.x_opt)
@@ -42,7 +42,7 @@ class ProfileProblemA(unittest.TestCase):
 
     def test_cg_p(self):
         x = np.array([[0], [0], [0], [0], [0], [0]])
-        x_opt = opt.conjugate_gradient(self.p, x, tolerance=1e-6)
+        x_opt = opt.conjugate_gradient(self.p, x, tol=1e-6)
         print('cg')
         print(x_opt)
         print(self.x_opt)
@@ -51,7 +51,7 @@ class ProfileProblemA(unittest.TestCase):
 
     def test_sec_p(self):
         x = np.array([[0], [0], [0], [0], [0], [0]])
-        x_opt = opt.secant(self.p, x, tolerance=1e-6)
+        x_opt = opt.secant(self.p, x, tol=1e-6)
         print('sec')
         print(x_opt)
         print(self.x_opt)

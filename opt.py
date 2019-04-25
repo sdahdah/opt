@@ -5,8 +5,10 @@ from functools import partial
 class Problem:
     """Optimization problem"""
 
-    def __init__(self, cost, grad=None, grad_step=None):
+    def __init__(self, cost, grad=None, grad_step=None,
+                 eq_const=None, ineq_const=None):
         self._cost = cost
+        # Check presence of gradient function
         if grad is None and grad_step is None:
             self._grad_step = 1e-8
             self._grad = partial(_fd_grad, self, h=self._grad_step)
@@ -16,6 +18,12 @@ class Problem:
         elif grad is not None:
             self._grad_step = None
             self._grad = grad
+        # Check presence of constraints
+        if eq_const is not None:
+            self._eq_const = eq_const
+        if ineq_const is not None:
+            self._ineq_const = ineq_const
+        if 
 
     def cost(self, x=None):
         if x is not None:
@@ -30,11 +38,11 @@ class Problem:
             return self._grad
 
 
-def steepest_descent(p, x, tolerance=1e-6, max_iter=999):
+def steepest_descent(p, x, tol=1e-6, max_iter=999):
     """Steepest descent optimization algorithm"""
 
     i = 0
-    while np.linalg.norm(p.grad(x)) > tolerance:
+    while np.linalg.norm(p.grad(x)) > tol:
         if i > max_iter:
             break
         s = -p.grad(x).T
@@ -45,12 +53,12 @@ def steepest_descent(p, x, tolerance=1e-6, max_iter=999):
     return x
 
 
-def conjugate_gradient(p, x, tolerance=1e-6, rst_iter=99, max_iter=999):
+def conjugate_gradient(p, x, tol=1e-6, rst_iter=99, max_iter=999):
     """Conjugate gradient optimization algorithm"""
 
     i = 0
     s = -p.grad(x).T
-    while np.linalg.norm(p.grad(x)) > tolerance:
+    while np.linalg.norm(p.grad(x)) > tol:
         if i > rst_iter:
             i = 0
             s = -p.grad(x).T
@@ -70,14 +78,14 @@ def conjugate_gradient(p, x, tolerance=1e-6, rst_iter=99, max_iter=999):
     return x
 
 
-def secant(p, x, tolerance=1e-6, H=None, rst_iter=99, max_iter=999):
+def secant(p, x, tol=1e-6, H=None, rst_iter=99, max_iter=999):
     """Secant optimization algorithm"""
 
     if H is None:
         H = np.eye(np.max(np.shape(x)))
 
     i = 0
-    while np.linalg.norm(p.grad(x)) > tolerance:
+    while np.linalg.norm(p.grad(x)) > tol:
         s = -H @ p.grad(x).T
         if i > rst_iter:
             i = 0

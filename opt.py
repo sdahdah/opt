@@ -137,8 +137,8 @@ def penalty_function(p, x0, tol=1e-6, tol_const=1e-4, sigma_max=1e6):
         if p.eq_const() is not None:
             cost = cost + 0.5 * sigma * np.linalg.norm(p.eq_const(x))**2
         if p.ineq_const() is not None:
-            icx = p.ineq_const(x)
-            c = np.minimum(np.zeros(np.shape(icx)), icx)
+            ineq_x = p.ineq_const(x)
+            c = np.minimum(np.zeros(np.shape(ineq_x)), ineq_x)
             cost = cost + 0.5 * sigma * np.linalg.norm(c)**2
         return cost
 
@@ -147,11 +147,12 @@ def penalty_function(p, x0, tol=1e-6, tol_const=1e-4, sigma_max=1e6):
         if p.eq_const() is not None:
             cost = cost + np.linalg.norm(p.eq_const(x))**2
         if p.ineq_const() is not None:
-            icx = p.ineq_const(x)
-            cost = cost + np.linalg.norm(icx)**2
+            ineq_x = p.ineq_const(x)
+            c = np.minimum(np.zeros(np.shape(ineq_x)), ineq_x)
+            cost = cost + np.linalg.norm(c)**2
         return np.sqrt(cost)
 
-    sigma = 0.1
+    sigma = 1
     x = x0
 
     while cost_norm(x) > tol_const:
@@ -160,6 +161,49 @@ def penalty_function(p, x0, tol=1e-6, tol_const=1e-4, sigma_max=1e6):
         if sigma >= sigma_max:
             break
         sigma *= 10
+
+    return x
+
+
+def barrier_function(p, x0, tol=1e-6, tol_const=1e-4, sigma_max=1e6, r_min=1e-6, mode='inv'):
+    """Constrained optimization algorithm using barrier function"""
+
+    def phi(p, sigma, r, x):
+        cost = p.cost(x)
+        if p.eq_const() is not None:
+            cost = cost + 0.5 * sigma * np.linalg.norm(p.eq_const(x))**2
+        if p.ineq_const() is not None:
+            ineq_x = p.ineq_const(x)
+            if mode == 'inv':
+                cost = cost + r * np.sum(np.reciprocal(ineq_x))
+            elif mode == 'log':
+                cost = cost - r * np.sum(np.log(ineq_x))
+            else:
+                # TODO Handle this
+                print('INVALID MODE')
+        return cost
+
+    def cost_norm(x):
+        cost = 0
+        if p.eq_const() is not None:
+            cost = cost + np.linalg.norm(p.eq_const(x))**2
+        if p.ineq_const() is not None:
+            ineq_x = p.ineq_const(x)
+            c = np.minimum(np.zeros(np.shape(ineq_x)), ineq_x)
+            cost = cost + np.linalg.norm(c)**2
+        return np.sqrt(cost)
+
+    sigma = 1
+    r = 1
+    x = x0
+
+    while cost_norm(x) > tol_const:
+        up = Problem(partial(phi, p, sigma, r))
+        x = steepest_descent(up, x0, tol=tol)
+        if sigma >= sigma_max or r <= r_min:
+            break
+        sigma *= 10
+        r *= 0.1
 
     return x
 

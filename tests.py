@@ -133,9 +133,15 @@ class TestProblemD(unittest.TestCase):
         self.p = opt.Problem(v, eq_const=[h2], ineq_const=[h1])
         self.x_opt = np.array([[np.sqrt(2)/2], [np.sqrt(2)/2]])
 
-    def test_penalty_function(self, tol=1e-3, tol_const=1e-3):
-        x0 = np.array([[0], [0]])
-        x = opt.penalty_function(self.p, x0)
+    # def test_penalty_function(self, tol=1e-3, tol_const=1e-3):
+    #     x0 = np.array([[0], [0]])
+    #     x = opt.penalty_function(self.p, x0)
+    #     self.assertTrue(np.linalg.norm(x - self.x_opt) < 1e-3)
+
+    def test_barrier_function(self, tol=1e-3, tol_const=1e-3):
+        x0 = np.array([[0.1], [0.1]])
+        x = opt.barrier_function(self.p, x0)
+        print(x)
         self.assertTrue(np.linalg.norm(x - self.x_opt) < 1e-3)
 
 

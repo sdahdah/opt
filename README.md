@@ -19,3 +19,4 @@ make test
 - [x] Cone condition
 - [x] Max number of iterations
 - [x] Fix instability with CG on Problem B
+- [ ] Fix slow performance of penalty function

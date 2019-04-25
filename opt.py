@@ -21,8 +21,12 @@ class Problem:
         # Check presence of constraints
         if eq_const is not None:
             self._eq_const = eq_const
+        else:
+            self._eq_const = None
         if ineq_const is not None:
             self._ineq_const = ineq_const
+        else:
+            self._ineq_const = None
 
     def cost(self, x=None):
         if x is not None:
@@ -37,10 +41,22 @@ class Problem:
             return self._grad
 
     def eq_const(self, x=None):
-        if x is not None:
-            return np.array([[eq(x)] for eq in self._eq_const])
+        if self._eq_const is not None:
+            if x is not None:
+                return np.array([[eq(x)] for eq in self._eq_const])
+            else:
+                return np.array([[eq] for eq in self._eq_const])
         else:
-            return np.array([[eq] for eq in self._eq_const])
+            return None
+
+    def ineq_const(self, x=None):
+        if self._ineq_const is not None:
+            if x is not None:
+                return np.array([[ineq(x)] for ineq in self._ineq_const])
+            else:
+                return np.array([[ineq] for ineq in self._ineq_const])
+        else:
+            return None
 
 
 def steepest_descent(p, x, tol=1e-6, max_iter=999):
@@ -113,19 +129,36 @@ def secant(p, x, tol=1e-6, H=None, rst_iter=99, max_iter=999):
     return x
 
 
-def penalty_function(p, x0, tol=1e-6, tol_const=1e-4):
+def penalty_function(p, x0, tol=1e-6, tol_const=1e-4, sigma_max=1e6):
     """Constrained optimization algorithm using penalty function"""
 
-    sigma = 1
+    def phi(p, sigma, x):
+        cost = p.cost(x)
+        if p.eq_const() is not None:
+            cost = cost + 0.5 * sigma * np.linalg.norm(p.eq_const(x))**2
+        if p.ineq_const() is not None:
+            icx = p.ineq_const(x)
+            c = np.minimum(np.zeros(np.shape(icx)), icx)
+            cost = cost + 0.5 * sigma * np.linalg.norm(c)**2
+        return cost
 
-    def phi(sigma, x):
-        return p.cost(x) + 0.5 * sigma * np.linalg.norm(p.eq_const(x))**2
+    def cost_norm(x):
+        cost = 0
+        if p.eq_const() is not None:
+            cost = cost + np.linalg.norm(p.eq_const(x))**2
+        if p.ineq_const() is not None:
+            icx = p.ineq_const(x)
+            cost = cost + np.linalg.norm(icx)**2
+        return np.sqrt(cost)
 
+    sigma = 0.1
     x = x0
 
-    while np.linalg.norm(p.eq_const(x)) > tol_const:
-        up = Problem(partial(phi, sigma))
+    while cost_norm(x) > tol_const:
+        up = Problem(partial(phi, p, sigma))
         x = steepest_descent(up, x0, tol=tol)
+        if sigma >= sigma_max:
+            break
         sigma *= 10
 
     return x
@@ -141,10 +174,10 @@ def _step_size(p, x, s, gamma=1.5, mu=0.8):
 
     # Precompute cost and gradient to save time
     vx = p.cost(x)
-    gx = p.grad(x)
+    gx_s = p.grad(x) @ s
 
     def v_bar(w):
-        return vx + 0.5 * w * gx @ s
+        return vx + 0.5 * w * gx_s
 
     while p.cost(x + gamma**k_g * s) < v_bar(gamma**k_g):
         k_g += 1

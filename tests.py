@@ -1,4 +1,6 @@
 import unittest
+from pstats import Stats
+import cProfile
 import numpy as np
 import opt
 
@@ -120,6 +122,21 @@ class TestProblemC(unittest.TestCase):
         x = np.array([[0], [0]])
         x_opt = opt.secant(self.p, x, tol=1e-4)
         self.assertTrue(np.linalg.norm(x_opt - self.x_opt) < 1e-3)
+
+
+class TestProblemD(unittest.TestCase):
+
+    def setUp(self):
+        v = lambda x: np.abs(x[0] - 2) + np.abs(x[1] - 2)
+        h1 = lambda x: x[0] - x[1]**2
+        h2 = lambda x: x[0]**2 + x[1]**2 - 1
+        self.p = opt.Problem(v, eq_const=[h2], ineq_const=[h1])
+        self.x_opt = np.array([[np.sqrt(2)/2], [np.sqrt(2)/2]])
+
+    def test_penalty_function(self, tol=1e-3, tol_const=1e-3):
+        x0 = np.array([[0], [0]])
+        x = opt.penalty_function(self.p, x0)
+        self.assertTrue(np.linalg.norm(x - self.x_opt) < 1e-3)
 
 
 class TestBasics(unittest.TestCase):

@@ -4,7 +4,7 @@ import opt
 
 np.set_printoptions(precision=20)
 
-class TestProblemA(unittest.TestCase):
+class TestProblemAGrad(unittest.TestCase):
 
     def setUp(self):
         a = 5
@@ -37,7 +37,7 @@ class TestProblemA(unittest.TestCase):
         self.assertTrue(np.linalg.norm(x_opt - self.x_opt) < 1e-6)
 
 
-class TestFdProblemA(unittest.TestCase):
+class TestProblemA(unittest.TestCase):
 
     def setUp(self):
         a = 5
@@ -55,16 +55,40 @@ class TestFdProblemA(unittest.TestCase):
 
     def test_sd(self):
         x = np.array([[0], [0], [0], [0], [0], [0]])
-        x_opt = opt.steepest_descent(self.p, x, tolerance=1e-4)
+        x_opt = opt.steepest_descent(self.p, x, tolerance=1e-3)
         self.assertTrue(np.linalg.norm(x_opt - self.x_opt) < 1e-3)
 
     def test_cg(self):
         x = np.array([[0], [0], [0], [0], [0], [0]])
-        x_opt = opt.conjugate_gradient(self.p, x, tolerance=1e-4)
+        x_opt = opt.conjugate_gradient(self.p, x, tolerance=1e-3)
         self.assertTrue(np.linalg.norm(x_opt - self.x_opt) < 1e-3)
 
     def test_sec(self):
         x = np.array([[0], [0], [0], [0], [0], [0]])
+        x_opt = opt.secant(self.p, x, tolerance=1e-3)
+        self.assertTrue(np.linalg.norm(x_opt - self.x_opt) < 1e-3)
+
+
+class TestProblemB(unittest.TestCase):
+
+    def setUp(self):
+        v = lambda x : -np.sqrt((x[0]**2 + 1) * (2 * x[1]**2 + 1)) \
+                       / (x[0]**2 + x[1]**2 + 0.5)
+        self.x_opt = np.array([[0], [0]])
+        self.p = opt.Problem(v)
+
+    def test_sd(self):
+        x = np.array([[10], [10]])
+        x_opt = opt.steepest_descent(self.p, x, tolerance=1e-4)
+        self.assertTrue(np.linalg.norm(x_opt - self.x_opt) < 1e-3)
+
+    def test_cg(self):
+        x = np.array([[10], [10]])
+        x_opt = opt.conjugate_gradient(self.p, x, tolerance=1e-4)
+        self.assertTrue(np.linalg.norm(x_opt - self.x_opt) < 1e-3)
+
+    def test_sec(self):
+        x = np.array([[10], [10]])
         x_opt = opt.secant(self.p, x, tolerance=1e-4)
         self.assertTrue(np.linalg.norm(x_opt - self.x_opt) < 1e-3)
 

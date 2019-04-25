@@ -43,18 +43,18 @@ class Problem:
     def eq_const(self, x=None):
         if self._eq_const is not None:
             if x is not None:
-                return np.array([eq(x) for eq in self._eq_const])
+                return np.array([[eq(x)] for eq in self._eq_const])
             else:
-                return np.array([eq for eq in self._eq_const])
+                return np.array([[eq] for eq in self._eq_const])
         else:
             return None
 
     def ineq_const(self, x=None):
         if self._ineq_const is not None:
             if x is not None:
-                return np.array([ineq(x) for ineq in self._ineq_const])
+                return np.array([[ineq(x)] for ineq in self._ineq_const])
             else:
-                return np.array([ineq for ineq in self._ineq_const])
+                return np.array([[ineq] for ineq in self._ineq_const])
         else:
             return None
 

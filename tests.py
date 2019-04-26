@@ -4,7 +4,7 @@ import cProfile
 import numpy as np
 import opt
 
-np.set_printoptions(precision=20)
+np.set_printoptions(precision=20, linewidth=120)
 
 @unittest.skip('')
 class TestProblemAGrad(unittest.TestCase):
@@ -77,8 +77,8 @@ class TestProblemA(unittest.TestCase):
 class TestProblemB(unittest.TestCase):
 
     def setUp(self):
-        v = lambda x : -np.sqrt((x[0]**2 + 1) * (2 * x[1]**2 + 1)) \
-                       / (x[0]**2 + x[1]**2 + 0.5)
+        v = lambda x : -np.sqrt((x[0, 0]**2 + 1) * (2 * x[1, 0]**2 + 1)) \
+                       / (x[0, 0]**2 + x[1, 0]**2 + 0.5)
         self.x_opt = np.array([[0], [0]])
         self.p = opt.Problem(v)
 
@@ -106,8 +106,8 @@ class TestProblemC(unittest.TestCase):
         b = np.array([[1], [2]])
         C = np.array([[12, 3], [3, 10]])
         v = lambda x : a + b.T @ x + x.T @ C @ x \
-                       + 10 * np.log(1 + x[0]**4) * np.sin(100 * x[0]) \
-                       + 10 * np.log(1 + x[1]**4) * np.cos(100 * x[1])
+                       + 10 * np.log(1 + x[0, 0]**4) * np.sin(100 * x[0, 0]) \
+                       + 10 * np.log(1 + x[1, 0]**4) * np.cos(100 * x[1, 0])
         # TODO Verify that this is the real optimum
         self.x_opt = np.array([[-0.01773056364041071], [-0.09577801844122487]])
         self.p = opt.Problem(v)
@@ -132,9 +132,9 @@ class TestProblemC(unittest.TestCase):
 class TestProblemD(unittest.TestCase):
 
     def setUp(self):
-        v = lambda x: np.abs(x[0] - 2) + np.abs(x[1] - 2)
-        h1 = lambda x: x[0] - x[1]**2
-        h2 = lambda x: x[0]**2 + x[1]**2 - 1
+        v = lambda x: np.abs(x[0, 0] - 2) + np.abs(x[1, 0] - 2)
+        h1 = lambda x: x[0, 0] - x[1, 0]**2
+        h2 = lambda x: x[0, 0]**2 + x[1, 0]**2 - 1
         self.p = opt.Problem(v, eq_const=[h2], ineq_const=[h1])
         self.x_opt = np.array([[np.sqrt(2)/2], [np.sqrt(2)/2]])
 
@@ -156,20 +156,19 @@ class TestProblemD(unittest.TestCase):
         x = opt.barrier_function(self.p, x0, mode='log')
         self.assertTrue(np.linalg.norm(x - self.x_opt) < 1e-3)
 
-    def test_aug_lag(self):
-        x0 = np.array([[-1], [0]])
-        x = opt.augmented_lagrange(self.p, x0, tol=1e-6, tol_const=1e-6)
-        # TODO Not precise enough
-        self.assertTrue(np.linalg.norm(self.x_opt - x) < 1e-2)
+    # def test_aug_lag(self):
+    #     x0 = np.array([[-1], [0]])
+    #     x = opt.augmented_lagrange(self.p, x0, tol=1e-6, tol_const=1e-6)
+    #     # TODO Not precise enough
+    #     self.assertTrue(np.linalg.norm(self.x_opt - x) < 1e-2)
 
 
-@unittest.skip('')
 class TestProblemE(unittest.TestCase):
 
     def setUp(self):
-        v = lambda x: -x[0] * x[1]
-        h1 = lambda x: -x[0] - x[1]**2 + 1
-        h2 = lambda x: x[0] + x[1]
+        v = lambda x: -x[0, 0] * x[1, 0]
+        h1 = lambda x: -x[0, 0] - x[1, 0]**2 + 1
+        h2 = lambda x: x[0, 0] + x[1, 0]
         self.p = opt.Problem(v, ineq_const=[h1, h2])
         # self.x_opt = np.array([[np.sqrt(2)/2], [np.sqrt(2)/2]])
 
@@ -197,12 +196,17 @@ class TestProblemE(unittest.TestCase):
         print()
         # self.assertTrue(np.linalg.norm(x - self.x_opt) < 1e-3)
 
+    @unittest.skip('')
     def test_aug_lag(self):
         x0 = np.array([[10], [1]])
         x = opt.augmented_lagrange(self.p, x0, tol=1e-4, tol_const=1e-4)
         print(x)
         # TODO Not precise enough
         # self.assertTrue(np.linalg.norm(self.x_opt - x) < 1e-2)
+
+    # def test_lag_new(self):
+    #     x0 = np.array([[10], [1]])
+    #     x = opt.lagrange_newton(self.p, x0, tol=1e-4)
 
 
 @unittest.skip('')
@@ -245,6 +249,7 @@ class TestProblemF(unittest.TestCase):
         # TODO Not precise enough
         # self.assertTrue(np.linalg.norm(self.x_opt - x) < 1e-2)
 
+@unittest.skip('')
 class TestBasics(unittest.TestCase):
 
     def test_scalar_problem(self):
@@ -357,9 +362,9 @@ class TestBasicConstraints(unittest.TestCase):
 
     def setUp(self):
         # Example 12.1.5 from Fletcher
-        v = lambda x: -x[0] - x[1]
+        v = lambda x: -x[0, 0] - x[1, 0]
         del_v = lambda x: np.ndarray([[-1, -1]])
-        c = [lambda x: 1 - x[0]**2 - x[1]**2]
+        c = [lambda x: 1 - x[0, 0]**2 - x[1, 0]**2]
         self.p = opt.Problem(v, eq_const=c)
 
     @unittest.skip('')
@@ -391,6 +396,10 @@ class TestBasicConstraints(unittest.TestCase):
         x = opt.augmented_lagrange(self.p, x0, tol=1e-4, tol_const=1e-4)
         x_opt = np.array([[0.7071318], [0.7071093]])
         self.assertTrue(np.linalg.norm(x_opt - x) < 1e-4)
+
+    def test_lag_new(self):
+        x0 = np.array([[-1], [0]])
+        x = opt.lagrange_newton(self.p, x0, tol=1e-6)
 
 
 if __name__ == '__main__':

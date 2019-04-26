@@ -177,7 +177,8 @@ def penalty_function(p, x0, tol=1e-6, tol_const=1e-4, sigma_max=1e6):
     return x
 
 
-def barrier_function(p, x0, tol=1e-6, tol_const=1e-4, sigma_max=1e6, r_min=1e-6, mode='inv'):
+def barrier_function(p, x0, tol=1e-6, tol_const=1e-4, sigma_max=1e6,
+                     r_min=1e-6, mode='inv'):
     """Constrained optimization algorithm using barrier function"""
 
     def phi(p, sigma, r, x):
@@ -287,7 +288,66 @@ def augmented_lagrange(p, x0, tol=1e-6, tol_const=1e-6, sigma_max=1e12):
 
 def lagrange_newton(p, x0, tol=1e-6):
     """Constrained optimization algorithm using Lagrange-Newton method"""
-    return 0
+
+    n_e = p.num_eq_const()
+    n_i = p.num_ineq_const()
+    n_c = n_e + n_i
+
+    def W(x, lmb):
+        lmb_e = lmb[0:n_e, :]
+        lmb_i = lmb[n_e:n_c, :]
+        hess_f = _fd_hessian(p.cost, x)
+        hess_c_e = - np.sum([lmb_e[i] * _fd_hessian(p.eq_const()[i], x)
+            for i in range(0, n_e)]) 
+        hess_c_i = - np.sum([lmb_i[i] * _fd_hessian(p.ineq_const()[i], x)
+            for i in range(0, n_i)])
+        return hess_f + hess_c_e + hess_c_i
+
+    def A(x):
+        grad_e = np.array([np.squeeze(_fd_grad(p.eq_const()[i], x))
+                for i in range (0, n_e)])
+        grad_i = np.array([np.squeeze(_fd_grad(p.ineq_const()[i], x))
+                for i in range (0, n_i)])
+        if n_e != 0 and n_i != 0:
+            grad = np.concatenate((grad_e, grad_i), axis=0)
+        elif n_e != 0:
+            grad = grad_e
+        elif n_i != 0:
+            grad = grad_i
+        return grad
+
+    x = x0
+    lmb = np.zeros((n_c, 1))
+
+    for i in range(0, 100):
+        KKT = np.block([
+            [W(x, lmb), -A(x).T],
+            [-A(x), np.zeros((n_c, n_c))]
+        ])
+
+        if n_e != 0 and n_i != 0:
+            f = np.block([
+                [-_fd_grad(p.cost, x).T],
+                [np.expand_dims(p.eq_const(x), axis=1)],
+                [np.expand_dims(p.ineq_const(x), axis=1)]
+            ])
+        elif n_e != 0:
+            f = np.block([
+                [-_fd_grad(p.cost, x).T],
+                [np.expand_dims(p.eq_const(x), axis=1)]
+            ])
+        elif n_i != 0:
+            f = np.block([
+                [-_fd_grad(p.cost, x).T],
+                [np.expand_dims(p.ineq_const(x), axis=1)]
+            ])
+
+        X = np.linalg.solve(KKT, f)
+        dim = np.max(np.shape(x))
+        x = x + X[:dim, :]
+        lmb = X[dim:, :]
+
+    return x
 
 
 def _step_size(p, x, s, gamma=1.5, mu=0.8):

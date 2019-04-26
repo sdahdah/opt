@@ -158,72 +158,89 @@ class TestProblemD(unittest.TestCase):
     def test_aug_lag(self):
         x0 = np.array([[-1], [0]])
         x = opt.augmented_lagrange(self.p, x0, tol=1e-6, tol_const=1e-6)
-        print(x)
         # TODO Not precise enough
         self.assertTrue(np.linalg.norm(self.x_opt - x) < 1e-2)
 
 
-# class TestProblemE(unittest.TestCase):
+class TestProblemE(unittest.TestCase):
 
-#     def setUp(self):
-#         v = lambda x: -x[0] * x[1]
-#         h1 = lambda x: -x[0] - x[1]**2 + 1
-#         h2 = lambda x: x[0] + x[1]
-#         self.p = opt.Problem(v, ineq_const=[h1, h2])
-#         # self.x_opt = np.array([[np.sqrt(2)/2], [np.sqrt(2)/2]])
+    def setUp(self):
+        v = lambda x: -x[0] * x[1]
+        h1 = lambda x: -x[0] - x[1]**2 + 1
+        h2 = lambda x: x[0] + x[1]
+        self.p = opt.Problem(v, ineq_const=[h1, h2])
+        # self.x_opt = np.array([[np.sqrt(2)/2], [np.sqrt(2)/2]])
 
-#     def test_penalty_function(self, tol=1e-4, tol_const=1e-4):
-#         x0 = np.array([[1], [1]])
-#         x = opt.penalty_function(self.p, x0)
-#         print(x)
-#         print()
-#         # self.assertTrue(np.linalg.norm(x - self.x_opt) < 1e-3)
+    @unittest.skip('')
+    def test_penalty_function(self, tol=1e-4, tol_const=1e-4):
+        x0 = np.array([[1], [1]])
+        x = opt.penalty_function(self.p, x0)
+        print(x)
+        print()
+        # self.assertTrue(np.linalg.norm(x - self.x_opt) < 1e-3)
 
-#     def test_inv_barrier_function(self, tol=1e-4, tol_const=1e-4):
-#         x0 = np.array([[1], [1]])
-#         x = opt.barrier_function(self.p, x0, mode='inv')
-#         print(x)
-#         print()
-#         # self.assertTrue(np.linalg.norm(x - self.x_opt) < 1e-3)
+    @unittest.skip('')
+    def test_inv_barrier_function(self, tol=1e-4, tol_const=1e-4):
+        x0 = np.array([[1], [1]])
+        x = opt.barrier_function(self.p, x0, mode='inv')
+        print(x)
+        print()
+        # self.assertTrue(np.linalg.norm(x - self.x_opt) < 1e-3)
 
-#     def test_log_barrier_function(self, tol=1e-4, tol_const=1e-4):
-#         x0 = np.array([[1], [1]])
-#         x = opt.barrier_function(self.p, x0, mode='log')
-#         print(x)
-#         print()
-#         # self.assertTrue(np.linalg.norm(x - self.x_opt) < 1e-3)
+    @unittest.skip('')
+    def test_log_barrier_function(self, tol=1e-4, tol_const=1e-4):
+        x0 = np.array([[1], [1]])
+        x = opt.barrier_function(self.p, x0, mode='log')
+        print(x)
+        print()
+        # self.assertTrue(np.linalg.norm(x - self.x_opt) < 1e-3)
+
+    def test_aug_lag(self):
+        x0 = np.array([[1], [1]])
+        x = opt.augmented_lagrange(self.p, x0, tol=1e-4, tol_const=1e-4)
+        # TODO Not precise enough
+        # self.assertTrue(np.linalg.norm(self.x_opt - x) < 1e-2)
 
 
-# class TestProblemF(unittest.TestCase):
+class TestProblemF(unittest.TestCase):
 
-#     def setUp(self):
-#         v = lambda x: np.log(x[0]) - x[1]
-#         h1 = lambda x: x[0] - 1
-#         h2 = lambda x: x[0]**2 + x[1]**2 - 4
-#         self.p = opt.Problem(v, eq_const=[h2], ineq_const=[h1])
-#         # self.x_opt = np.array([[np.sqrt(2)/2], [np.sqrt(2)/2]])
+    def setUp(self):
+        v = lambda x: np.log(x[0]) - x[1]
+        h1 = lambda x: x[0] - 1
+        h2 = lambda x: x[0]**2 + x[1]**2 - 4
+        self.p = opt.Problem(v, eq_const=[h2], ineq_const=[h1])
+        # self.x_opt = np.array([[np.sqrt(2)/2], [np.sqrt(2)/2]])
 
-#     def test_penalty_function(self, tol=1e-4, tol_const=1e-4):
-#         x0 = np.array([[1], [1]])
-#         x = opt.penalty_function(self.p, x0)
-#         print(x)
-#         print()
-#         # self.assertTrue(np.linalg.norm(x - self.x_opt) < 1e-3)
+    @unittest.skip('')
+    def test_penalty_function(self, tol=1e-4, tol_const=1e-4):
+        x0 = np.array([[1], [1]])
+        x = opt.penalty_function(self.p, x0)
+        print(x)
+        print()
+        # self.assertTrue(np.linalg.norm(x - self.x_opt) < 1e-3)
 
-#     def test_inv_barrier_function(self, tol=1e-4, tol_const=1e-4):
-#         x0 = np.array([[1], [1]])
-#         x = opt.barrier_function(self.p, x0, mode='inv')
-#         print(x)
-#         print()
-#         # self.assertTrue(np.linalg.norm(x - self.x_opt) < 1e-3)
+    @unittest.skip('')
+    def test_inv_barrier_function(self, tol=1e-4, tol_const=1e-4):
+        x0 = np.array([[1], [1]])
+        x = opt.barrier_function(self.p, x0, mode='inv')
+        print(x)
+        print()
+        # self.assertTrue(np.linalg.norm(x - self.x_opt) < 1e-3)
 
-#     def test_log_barrier_function(self, tol=1e-4, tol_const=1e-4):
-#         x0 = np.array([[1], [1]])
-#         x = opt.barrier_function(self.p, x0, mode='log')
-#         print(x)
-#         print()
-#         # self.assertTrue(np.linalg.norm(x - self.x_opt) < 1e-3)
+    @unittest.skip('')
+    def test_log_barrier_function(self, tol=1e-4, tol_const=1e-4):
+        x0 = np.array([[1], [1]])
+        x = opt.barrier_function(self.p, x0, mode='log')
+        print(x)
+        print()
+        # self.assertTrue(np.linalg.norm(x - self.x_opt) < 1e-3)
 
+    def test_aug_lag(self):
+        x0 = np.array([[2.1], [0.1]])
+        x = opt.augmented_lagrange(self.p, x0, tol=1e-4, tol_const=1e-4)
+        print(x)
+        # TODO Not precise enough
+        # self.assertTrue(np.linalg.norm(self.x_opt - x) < 1e-2)
 
 @unittest.skip("skip")
 class TestBasics(unittest.TestCase):

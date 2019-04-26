@@ -286,7 +286,7 @@ def augmented_lagrange(p, x0, tol=1e-6, tol_const=1e-6, sigma_max=1e12):
     return x
 
 
-def lagrange_newton(p, x0, tol_const=1e-6):
+def lagrange_newton(p, x0, tol=1e-6, tol_const=1e-6):
     """Constrained optimization algorithm using Lagrange-Newton method"""
 
     n_e = p.num_eq_const()
@@ -329,7 +329,7 @@ def lagrange_newton(p, x0, tol_const=1e-6):
     elif c_i is not None:
         c = c_i
 
-    while np.linalg.norm(c) > tol_const:
+    while np.linalg.norm(_fd_grad(p.cost, x)) > tol or np.linalg.norm(c) > tol_const:
 
         KKT = np.block([
             [W(x, lmb), -A(x).T],

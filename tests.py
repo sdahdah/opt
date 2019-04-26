@@ -402,7 +402,8 @@ class TestBasicConstraints(unittest.TestCase):
         c = [lambda x: x[0, 0]**2 + x[1, 0]**2 - 25]
         p = opt.Problem(v, eq_const=c)
         x0 = np.array([[-2.8], [4.2]])
-        x = opt.lagrange_newton(p, x0, tol_const=1e-6)
+        x = opt.lagrange_newton(p, x0, tol = 1e-4, tol_const=1e-4)
+        print(x)
 
 
 if __name__ == '__main__':

@@ -43,18 +43,18 @@ class Problem:
     def eq_const(self, x=None):
         if self._eq_const is not None:
             if x is not None:
-                return np.array([[eq(x)] for eq in self._eq_const])
+                return np.array([eq(x) for eq in self._eq_const])
             else:
-                return np.array([[eq] for eq in self._eq_const])
+                return np.array([eq for eq in self._eq_const])
         else:
             return None
 
     def ineq_const(self, x=None):
         if self._ineq_const is not None:
             if x is not None:
-                return np.array([[ineq(x)] for ineq in self._ineq_const])
+                return np.array([ineq(x) for ineq in self._ineq_const])
             else:
-                return np.array([[ineq] for ineq in self._ineq_const])
+                return np.array([ineq for ineq in self._ineq_const])
         else:
             return None
 
@@ -217,22 +217,72 @@ def barrier_function(p, x0, tol=1e-6, tol_const=1e-4, sigma_max=1e6, r_min=1e-6,
     return x
 
 
-# def augmented_lagrange(p, x0, tol=1e-6):
-#     """Constrained optimization algorithm using augmented Lagrange method"""
+def augmented_lagrange(p, x0, tol=1e-6, tol_const=1e-6, sigma_max=1e6):
+    """Constrained optimization algorithm using augmented Lagrange method"""
 
-#     def phi(p, lmb, sgm, x):
-#         S = np.diagflat(sgm)
-#         cost = p.cost(x)
-#         if p.eq_const() is not None:
-#             eq_x = p.eq_const(x)
-#             n_eq = np.max(np.shape(eq_x))
-#             cost = cost - lmb.T @ eq_x + 0.5 * (eq_x.T @ S @ eq_x)
-#         if p.ineq_const() is not None:
-#             ineq_x = p.ineq_const(x)
-#             n_ineq = np.max(np.shape(ineq_x))
-#             cost = cost + 
+    def phi(p, lmb, sgm, x):
+        cost = p.cost(x)
 
-#         return cost
+        n_e = p.num_eq_const()
+        n_i = p.num_ineq_const()
+        n_c = n_e + n_i
+
+        lmb_e = lmb[0:n_e, :]
+        lmb_i = lmb[n_e:n_c, :]
+        sgm_e = sgm[0:n_e, :]
+        sgm_i = sgm[n_e:n_c, :]
+
+        if p.eq_const() is not None:
+            c_e = p.eq_const(x)
+            cost = cost - sum(lmb_e * c_e) + 0.5 * sum(sgm_e * c_e**2)
+
+        if p.ineq_const() is not None:
+            c_i = p.ineq_const(x)
+            p_i = np.array([-lmb_i[i] * c_i[i] + 0.5 * sgm_i[i] * c_i[i]**2 \
+                            if c_i[i] <= lmb_i[i] / sgm_i[i] \
+                            else -0.5 * lmb_i[i]**2 / sgm_i[i] \
+                            for i in range(0, n_i)])
+            cost = cost + sum(p_i)
+
+        return cost
+
+    n_e = p.num_eq_const()
+    n_i = p.num_ineq_const()
+    n_c = n_e + n_i
+
+    lmb = np.ones((n_c, 1))
+    sgm = np.ones((n_c, 1))
+
+    x = x0
+    c = 1e12 * np.ones((n_c, 1))
+
+    while np.linalg.norm(c) > tol_const:
+        up = Problem(partial(phi, p, lmb, sgm))
+        x = steepest_descent(up, x0, tol=tol)
+
+        c_prv = c
+        c_e = p.eq_const(x)
+        c_i = p.ineq_const(x)
+
+        if c_e is not None and c_i is not None:
+            c = np.concatenate((c_e, c_i), axis=0)
+        elif c_e is not None:
+            c = c_e
+        elif c_i is not None:
+            c = c_i
+
+        if any(sgm >= sigma_max):
+            break
+
+        if np.linalg.norm(c, np.inf) > 0.25 * np.linalg.norm(c_prv, np.inf):
+            for i in range(0, n_c):
+                if np.abs(c[i]) > 0.25 * np.linalg.norm(c_prv, np.inf):
+                    sgm[i] *= 10
+            continue
+
+        lmb = lmb - (sgm * c)
+
+    return x
 
 
 def _step_size(p, x, s, gamma=1.5, mu=0.8):

@@ -197,7 +197,7 @@ class TestProblemC(unittest.TestCase):
         fig.savefig('./fig/sec-pC.eps', format='eps')
 
 
-@unittest.skip('Done generating plots for now')
+# @unittest.skip('Done generating plots for now')
 class TestProblemD(unittest.TestCase):
 
     def setUp(self):
@@ -207,6 +207,7 @@ class TestProblemD(unittest.TestCase):
         self.p = opt.Problem(v, eq_const=[h2], ineq_const=[h1])
         self.x_opt = np.array([[np.sqrt(2)/2], [np.sqrt(2)/2]])
 
+    @unittest.skip('Temp')
     def test_penalty_function(self, tol=1e-3, tol_const=1e-3):
         x0 = np.array([[0], [0]])
         x_opt = opt.penalty_function(self.p, x0, hist=True)
@@ -225,6 +226,7 @@ class TestProblemD(unittest.TestCase):
         plt.legend()
         fig.savefig('./fig/pe-pD.eps', format='eps')
 
+    @unittest.skip('Temp')
     def test_inv_barrier_function(self, tol=1e-3, tol_const=1e-3):
         x0 = np.array([[0.1], [0.1]])
         x_opt = opt.barrier_function(self.p, x0, mode='inv', hist=True)
@@ -247,6 +249,27 @@ class TestProblemD(unittest.TestCase):
     def test_log_barrier_function(self, tol=1e-3, tol_const=1e-3):
         x0 = np.array([[0.1], [0.1]])
         x = opt.barrier_function(self.p, x0, mode='log')
+
+    @unittest.skip('Temp')
+    def test_aug_lag(self):
+        x0 = np.array([[0.1], [0.1]])
+        x_opt = opt.augmented_lagrange(self.p, x0, tol=1e-4, tol_const=1e-4, hist=True)
+        g = np.array([np.linalg.norm(self.p.grad(x_opt[i]))
+            for i in range(len(x_opt))])
+        c_i = np.array([np.linalg.norm(np.minimum(self.p.ineq_const(x_opt[i]), 0))
+            for i in range(len(x_opt))])
+        fig = plt.figure()
+        plt.plot(np.arange(len(x_opt)), g, label='Gradient Norm')
+        plt.plot(np.arange(len(x_opt)), c_i, label='Inequality Constraint Norm')
+        plt.xticks(np.arange(len(x_opt)))
+        plt.xlabel('Iteration')
+        plt.legend()
+        fig.savefig('./fig/al-pD.eps', format='eps')
+
+    def test_lag_new(self):
+        x0 = np.array([[0.1], [0.1]])
+        x_opt = opt.lagrange_newton(self.p, x0, tol=1e-4)
+        print(x_opt)
 
 
 @unittest.skip('Done generating plots for now')
@@ -294,14 +317,29 @@ class TestProblemE(unittest.TestCase):
         x0 = np.array([[1], [1]])
         x = opt.barrier_function(self.p, x0, mode='log')
 
+    def test_aug_lag(self):
+        x0 = np.array([[1], [1]])
+        x_opt = opt.augmented_lagrange(self.p, x0, tol=1e-4, tol_const=1e-4, hist=True)
+        g = np.array([np.linalg.norm(self.p.grad(x_opt[i]))
+            for i in range(len(x_opt))])
+        c_i = np.array([np.linalg.norm(np.minimum(self.p.ineq_const(x_opt[i]), 0))
+            for i in range(len(x_opt))])
+        fig = plt.figure()
+        plt.plot(np.arange(len(x_opt)), g, label='Gradient Norm')
+        plt.plot(np.arange(len(x_opt)), c_i, label='Inequality Constraint Norm')
+        plt.xticks(np.arange(len(x_opt)))
+        plt.xlabel('Iteration')
+        plt.legend()
+        fig.savefig('./fig/al-pE.eps', format='eps')
 
-@unittest.skip('')
+
+@unittest.skip('Does not work at all')
 class TestProblemF(unittest.TestCase):
 
     def setUp(self):
-        v = lambda x: np.log(x[0]) - x[1]
-        h1 = lambda x: x[0] - 1
-        h2 = lambda x: x[0]**2 + x[1]**2 - 4
+        v = lambda x: np.log(x[0, 0]) - x[1, 0]
+        h1 = lambda x: x[0, 0] - 1
+        h2 = lambda x: x[0, 0]**2 + x[1, 0]**2 - 4
         self.p = opt.Problem(v, eq_const=[h2], ineq_const=[h1])
 
     def test_penalty_function(self, tol=1e-4, tol_const=1e-4):

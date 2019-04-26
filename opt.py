@@ -43,7 +43,7 @@ class Problem:
     def eq_const(self, x=None):
         if self._eq_const is not None:
             if x is not None:
-                return np.array([eq(x) for eq in self._eq_const])
+                return np.array([[eq(x)] for eq in self._eq_const])
             else:
                 return np.array([eq for eq in self._eq_const])
         else:
@@ -52,7 +52,7 @@ class Problem:
     def ineq_const(self, x=None):
         if self._ineq_const is not None:
             if x is not None:
-                return np.array([ineq(x) for ineq in self._ineq_const])
+                return np.array([[ineq(x)] for ineq in self._ineq_const])
             else:
                 return np.array([ineq for ineq in self._ineq_const])
         else:
@@ -358,18 +358,18 @@ def lagrange_newton(p, x0, tol=1e-6, hist=False):
         if n_e != 0 and n_i != 0:
             f = np.block([
                 [-_fd_grad(p.cost, x).T + A(x).T @ lmb],
-                [np.expand_dims(p.eq_const(x), axis=1)],
-                [np.expand_dims(p.ineq_const(x), axis=1)]
+                [p.eq_const(x)],
+                [p.ineq_const(x)]
             ])
         elif n_e != 0:
             f = np.block([
                 [-_fd_grad(p.cost, x).T + A(x).T @ lmb],
-                [np.expand_dims(p.eq_const(x), axis=1)]
+                [p.eq_const(x)]
             ])
         elif n_i != 0:
             f = np.block([
                 [-_fd_grad(p.cost, x).T + A(x).T @ lmb],
-                [np.expand_dims(p.ineq_const(x), axis=1)]
+                [p.ineq_const(x)]
             ])
 
         x_prv = x
@@ -390,8 +390,6 @@ def lagrange_newton(p, x0, tol=1e-6, hist=False):
             c = c_i
 
         norm_L = np.linalg.norm(x - x_prv)
-
-        print(x)
 
     return x if not hist else np.array(x_hist)
 

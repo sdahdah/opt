@@ -5,7 +5,6 @@ import opt
 
 np.set_printoptions(precision=20, linewidth=120)
 
-@unittest.skip('Done generating plots for now')
 class TestProblemAGrad(unittest.TestCase):
 
     def setUp(self):
@@ -33,6 +32,8 @@ class TestProblemAGrad(unittest.TestCase):
         plt.xlabel('Iteration')
         plt.ylabel('Norm of Gradient')
         fig.savefig('./fig/sd-pA-grad.eps', format='eps')
+        print('\nProblem A, Steepest Descent (Exact Gradient)')
+        print('arg min v(x) =\n', x_opt[-1])
 
     def test_cg(self):
         x = np.array([[0], [0], [0], [0], [0], [0]])
@@ -44,6 +45,8 @@ class TestProblemAGrad(unittest.TestCase):
         plt.xlabel('Iteration')
         plt.ylabel('Norm of Gradient')
         fig.savefig('./fig/cg-pA-grad.eps', format='eps')
+        print('\nProblem A, Conjugate Gradient (Exact Gradient)')
+        print('arg min v(x) =\n', x_opt[-1])
 
     def test_sec(self):
         x = np.array([[0], [0], [0], [0], [0], [0]])
@@ -55,9 +58,10 @@ class TestProblemAGrad(unittest.TestCase):
         plt.xlabel('Iteration')
         plt.ylabel('Norm of Gradient')
         fig.savefig('./fig/sec-pA-grad.eps', format='eps')
+        print('\nProblem A, Secant (Exact Gradient)')
+        print('arg min v(x) =\n', x_opt[-1])
 
 
-@unittest.skip('Done generating plots for now')
 class TestProblemA(unittest.TestCase):
 
     def setUp(self):
@@ -84,6 +88,8 @@ class TestProblemA(unittest.TestCase):
         plt.xlabel('Iteration')
         plt.ylabel('Norm of Gradient')
         fig.savefig('./fig/sd-pA.eps', format='eps')
+        print('\nProblem A, Steepest Descent')
+        print('arg min v(x) =\n', x_opt[-1])
 
     def test_cg(self):
         x = np.array([[0], [0], [0], [0], [0], [0]])
@@ -95,6 +101,8 @@ class TestProblemA(unittest.TestCase):
         plt.xlabel('Iteration')
         plt.ylabel('Norm of Gradient')
         fig.savefig('./fig/cg-pA.eps', format='eps')
+        print('\nProblem A, Conjugate Gradient')
+        print('arg min v(x) =\n', x_opt[-1])
 
     def test_sec(self):
         x = np.array([[0], [0], [0], [0], [0], [0]])
@@ -106,9 +114,10 @@ class TestProblemA(unittest.TestCase):
         plt.xlabel('Iteration')
         plt.ylabel('Norm of Gradient')
         fig.savefig('./fig/sec-pA.eps', format='eps')
+        print('\nProblem A, Secant')
+        print('arg min v(x) =\n', x_opt[-1])
 
 
-@unittest.skip('Done generating plots for now')
 class TestProblemB(unittest.TestCase):
 
     def setUp(self):
@@ -127,6 +136,8 @@ class TestProblemB(unittest.TestCase):
         plt.xlabel('Iteration')
         plt.ylabel('Norm of Gradient')
         fig.savefig('./fig/sd-pB.eps', format='eps')
+        print('\nProblem B, Steepest Descent')
+        print('arg min v(x) =\n', x_opt[-1])
 
     def test_cg(self):
         x = np.array([[10], [10]])
@@ -138,6 +149,8 @@ class TestProblemB(unittest.TestCase):
         plt.xlabel('Iteration')
         plt.ylabel('Norm of Gradient')
         fig.savefig('./fig/cg-pB.eps', format='eps')
+        print('\nProblem B, Conjugate Gradient')
+        print('arg min v(x) =\n', x_opt[-1])
 
     def test_sec(self):
         x = np.array([[10], [10]])
@@ -149,9 +162,10 @@ class TestProblemB(unittest.TestCase):
         plt.xlabel('Iteration')
         plt.ylabel('Norm of Gradient')
         fig.savefig('./fig/sec-pB.eps', format='eps')
+        print('\nProblem B, Secant')
+        print('arg min v(x) =\n', x_opt[-1])
 
 
-@unittest.skip('Done generating plots for now')
 class TestProblemC(unittest.TestCase):
 
     def setUp(self):
@@ -173,6 +187,8 @@ class TestProblemC(unittest.TestCase):
         plt.xlabel('Iteration')
         plt.ylabel('Norm of Gradient')
         fig.savefig('./fig/sd-pC.eps', format='eps')
+        print('\nProblem C, Steepest Descent')
+        print('arg min v(x) =\n', x_opt[-1])
 
     def test_cg(self):
         x = np.array([[0], [0]])
@@ -184,6 +200,8 @@ class TestProblemC(unittest.TestCase):
         plt.xlabel('Iteration')
         plt.ylabel('Norm of Gradient')
         fig.savefig('./fig/cg-pC.eps', format='eps')
+        print('\nProblem C, Conjugate Gradient')
+        print('arg min v(x) =\n', x_opt[-1])
 
     def test_sec(self):
         x = np.array([[0], [0]])
@@ -195,9 +213,10 @@ class TestProblemC(unittest.TestCase):
         plt.xlabel('Iteration')
         plt.ylabel('Norm of Gradient')
         fig.savefig('./fig/sec-pC.eps', format='eps')
+        print('\nProblem C, Secant')
+        print('arg min v(x) =\n', x_opt[-1])
 
 
-@unittest.skip('Done generating plots for now')
 class TestProblemD(unittest.TestCase):
 
     def setUp(self):
@@ -207,7 +226,6 @@ class TestProblemD(unittest.TestCase):
         self.p = opt.Problem(v, eq_const=[h2], ineq_const=[h1])
         self.x_opt = np.array([[np.sqrt(2)/2], [np.sqrt(2)/2]])
 
-    @unittest.skip('Temp')
     def test_penalty_function(self, tol=1e-3, tol_const=1e-3):
         x0 = np.array([[0], [0]])
         x_opt = opt.penalty_function(self.p, x0, hist=True)
@@ -225,8 +243,9 @@ class TestProblemD(unittest.TestCase):
         plt.xlabel('Iteration')
         plt.legend()
         fig.savefig('./fig/pe-pD.eps', format='eps')
+        print('\nProblem D, Penalty Function')
+        print('arg min v(x) =\n', x_opt[-1])
 
-    @unittest.skip('Temp')
     def test_inv_barrier_function(self, tol=1e-3, tol_const=1e-3):
         x0 = np.array([[0.1], [0.1]])
         x_opt = opt.barrier_function(self.p, x0, mode='inv', hist=True)
@@ -244,6 +263,8 @@ class TestProblemD(unittest.TestCase):
         plt.xlabel('Iteration')
         plt.legend()
         fig.savefig('./fig/ba-pD.eps', format='eps')
+        print('\nProblem D, Barrier Function')
+        print('arg min v(x) =\n', x_opt[-1])
 
     @unittest.skip('Log barrier function does not work correctly')
     def test_log_barrier_function(self, tol=1e-3, tol_const=1e-3):
@@ -264,6 +285,8 @@ class TestProblemD(unittest.TestCase):
         plt.xlabel('Iteration')
         plt.legend()
         fig.savefig('./fig/al-pD.eps', format='eps')
+        print('\nProblem D, Augmented Lagrange')
+        print('arg min v(x) =\n', x_opt[-1])
 
     @unittest.skip('Wrong answer')
     def test_lag_new(self):
@@ -272,7 +295,6 @@ class TestProblemD(unittest.TestCase):
         print(x_opt)
 
 
-@unittest.skip('Done generating plots for now')
 class TestProblemE(unittest.TestCase):
 
     def setUp(self):
@@ -295,6 +317,8 @@ class TestProblemE(unittest.TestCase):
         plt.xlabel('Iteration')
         plt.legend()
         fig.savefig('./fig/pe-pE.eps', format='eps')
+        print('\nProblem E, Penalty Function')
+        print('arg min v(x) =\n', x_opt[-1])
 
     @unittest.skip('Does not terminate ... ?')
     def test_inv_barrier_function(self, tol=1e-4, tol_const=1e-4):
@@ -311,6 +335,8 @@ class TestProblemE(unittest.TestCase):
         plt.xlabel('Iteration')
         plt.legend()
         fig.savefig('./fig/ba-pE.eps', format='eps')
+        print('\nProblem E, Barrier Function')
+        print('arg min v(x) =\n', x_opt[-1])
 
     @unittest.skip('Log barrier function does not work correctly')
     def test_log_barrier_function(self, tol=1e-4, tol_const=1e-4):
@@ -331,6 +357,8 @@ class TestProblemE(unittest.TestCase):
         plt.xlabel('Iteration')
         plt.legend()
         fig.savefig('./fig/al-pE.eps', format='eps')
+        print('\nProblem E, Augmented Lagrange')
+        print('arg min v(x) =\n', x_opt[-1])
 
     @unittest.skip('Wrong answer')
     def test_lag_new(self):

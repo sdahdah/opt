@@ -160,7 +160,7 @@ class TestProblemD(unittest.TestCase):
         x = opt.augmented_lagrange(self.p, x0, tol=1e-6, tol_const=1e-6)
         print(x)
         # TODO Not precise enough
-        self.assertTrue(np.linalg.norm(self.x_opt - x) < 1e-1)
+        self.assertTrue(np.linalg.norm(self.x_opt - x) < 1e-2)
 
 
 # class TestProblemE(unittest.TestCase):

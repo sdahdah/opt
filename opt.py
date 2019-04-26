@@ -217,7 +217,7 @@ def barrier_function(p, x0, tol=1e-6, tol_const=1e-4, sigma_max=1e6, r_min=1e-6,
     return x
 
 
-def augmented_lagrange(p, x0, tol=1e-6, tol_const=1e-6, sigma_max=1e6):
+def augmented_lagrange(p, x0, tol=1e-6, tol_const=1e-6, sigma_max=1e12):
     """Constrained optimization algorithm using augmented Lagrange method"""
 
     def phi(p, lmb, sgm, x):

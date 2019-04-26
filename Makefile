@@ -6,3 +6,6 @@ test:
 
 profile:
 	python -m unittest profl.py
+
+demo:
+	python -m unittest demo.py

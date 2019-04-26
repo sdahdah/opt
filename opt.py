@@ -71,25 +71,28 @@ class Problem:
             return 0
 
 
-def steepest_descent(p, x, tol=1e-6, max_iter=999):
+def steepest_descent(p, x, tol=1e-6, max_iter=999, hist=False):
     """Steepest descent optimization algorithm"""
 
     i = 0
+    x_hist = []
     while np.linalg.norm(p.grad(x)) > tol:
         if i > max_iter:
             break
         s = -p.grad(x).T
         w = _step_size(p, x, s)
+        x_hist.append(x)
         x = x + w * s
         i += 1
 
-    return x
+    return x if not hist else np.array(x_hist)
 
 
-def conjugate_gradient(p, x, tol=1e-6, rst_iter=99, max_iter=999):
+def conjugate_gradient(p, x, tol=1e-6, rst_iter=99, max_iter=999, hist=False):
     """Conjugate gradient optimization algorithm"""
 
     i = 0
+    x_hist = []
     s = -p.grad(x).T
     while np.linalg.norm(p.grad(x)) > tol:
         if i > rst_iter:
@@ -102,22 +105,24 @@ def conjugate_gradient(p, x, tol=1e-6, rst_iter=99, max_iter=999):
             break
         w = _step_size(p, x, s)
         x_prv = x
+        x_hist.append(x)
         x = x_prv + w * s
         beta = ((p.grad(x) - p.grad(x_prv)) @ p.grad(x).T) \
             / (p.grad(x_prv) @ p.grad(x_prv).T)
         s = -p.grad(x).T + beta * s
         i += 1
 
-    return x
+    return x if not hist else np.array(x_hist)
 
 
-def secant(p, x, tol=1e-6, H=None, rst_iter=99, max_iter=999):
+def secant(p, x, tol=1e-6, H=None, rst_iter=99, max_iter=999, hist=False):
     """Secant optimization algorithm"""
 
     if H is None:
         H = np.eye(np.max(np.shape(x)))
 
     i = 0
+    x_hist = []
     while np.linalg.norm(p.grad(x)) > tol:
         s = -H @ p.grad(x).T
         if i > rst_iter:
@@ -130,6 +135,7 @@ def secant(p, x, tol=1e-6, H=None, rst_iter=99, max_iter=999):
             break
         w = _step_size(p, x, s)
         x_prv = x
+        x_hist.append(x)
         x = x_prv + w * s
         # Davidon-Fletcher-Powell (DFP) Algorithm
         dx = x - x_prv
@@ -138,10 +144,10 @@ def secant(p, x, tol=1e-6, H=None, rst_iter=99, max_iter=999):
             - ((H @ dg.T) @ (H @ dg.T).T) / (dg @ H @ dg.T)
         i += 1
 
-    return x
+    return x if not hist else np.array(x_hist)
 
 
-def penalty_function(p, x0, tol=1e-6, tol_const=1e-4, sigma_max=1e6):
+def penalty_function(p, x0, tol=1e-6, tol_const=1e-4, sigma_max=1e6, hist=False):
     """Constrained optimization algorithm using penalty function"""
 
     def phi(p, sigma, x):
@@ -166,19 +172,21 @@ def penalty_function(p, x0, tol=1e-6, tol_const=1e-4, sigma_max=1e6):
 
     sigma = 1
     x = x0
+    x_hist = []
 
     while cost_norm(x) > tol_const:
         up = Problem(partial(phi, p, sigma))
+        x_hist.append(x)
         x = steepest_descent(up, x0, tol=tol)
         if sigma >= sigma_max:
             break
         sigma *= 10
 
-    return x
+    return x if not hist else np.array(x_hist)
 
 
 def barrier_function(p, x0, tol=1e-6, tol_const=1e-4, sigma_max=1e6,
-                     r_min=1e-6, mode='inv'):
+                     r_min=1e-6, mode='inv', hist=False):
     """Constrained optimization algorithm using barrier function"""
 
     def phi(p, sigma, r, x):
@@ -206,19 +214,21 @@ def barrier_function(p, x0, tol=1e-6, tol_const=1e-4, sigma_max=1e6,
     sigma = 1
     r = 1
     x = x0
+    x_hist = []
 
     while cost_norm(x) > tol_const:
         up = Problem(partial(phi, p, sigma, r))
+        x_hist.append(x)
         x = steepest_descent(up, x0, tol=tol)
         if sigma >= sigma_max or r <= r_min:
             break
         sigma *= 10
         r *= 0.1
 
-    return x
+    return x if not hist else np.array(x_hist)
 
 
-def augmented_lagrange(p, x0, tol=1e-6, tol_const=1e-6, sigma_max=1e12):
+def augmented_lagrange(p, x0, tol=1e-6, tol_const=1e-6, sigma_max=1e12, hist=False):
     """Constrained optimization algorithm using augmented Lagrange method"""
 
     def phi(p, lmb, sgm, x):
@@ -247,6 +257,8 @@ def augmented_lagrange(p, x0, tol=1e-6, tol_const=1e-6, sigma_max=1e12):
 
         return cost
 
+    x_hist = []
+
     n_e = p.num_eq_const()
     n_i = p.num_ineq_const()
     n_c = n_e + n_i
@@ -259,6 +271,7 @@ def augmented_lagrange(p, x0, tol=1e-6, tol_const=1e-6, sigma_max=1e12):
 
     while np.linalg.norm(c) > tol_const:
         up = Problem(partial(phi, p, lmb, sgm))
+        x_hist.append(x)
         x = steepest_descent(up, x0, tol=tol)
 
         c_prv = c
@@ -283,11 +296,13 @@ def augmented_lagrange(p, x0, tol=1e-6, tol_const=1e-6, sigma_max=1e12):
 
         lmb = lmb - (sgm * c)
 
-    return x
+    return x if not hist else np.array(x_hist)
 
 
-def lagrange_newton(p, x0, tol=1e-6):
+def lagrange_newton(p, x0, tol=1e-6, hist=False):
     """Constrained optimization algorithm using Lagrange-Newton method"""
+
+    x_hist = []
 
     n_e = p.num_eq_const()
     n_i = p.num_ineq_const()
@@ -298,7 +313,7 @@ def lagrange_newton(p, x0, tol=1e-6):
         lmb_i = lmb[n_e:n_c, :]
         hess_f = _fd_hessian(p.cost, x)
         hess_c_e = - np.sum([lmb_e[i] * _fd_hessian(p.eq_const()[i], x)
-            for i in range(0, n_e)]) 
+            for i in range(0, n_e)])
         hess_c_i = - np.sum([lmb_i[i] * _fd_hessian(p.ineq_const()[i], x)
             for i in range(0, n_i)])
         hess = hess_f + hess_c_e + hess_c_i
@@ -360,6 +375,7 @@ def lagrange_newton(p, x0, tol=1e-6):
         x_prv = x
         X = np.linalg.solve(KKT, f)
         dim = np.max(np.shape(x))
+        x_hist.append(x)
         x = x + X[:dim, :]
         lmb = lmb + X[dim:, :]
 
@@ -377,7 +393,7 @@ def lagrange_newton(p, x0, tol=1e-6):
 
         print(x)
 
-    return x
+    return x if not hist else np.array(x_hist)
 
 
 def _step_size(p, x, s, gamma=1.5, mu=0.8):

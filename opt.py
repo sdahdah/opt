@@ -250,7 +250,7 @@ def augmented_lagrange(p, x0, tol=1e-6, tol_const=1e-6, sigma_max=1e6):
     n_i = p.num_ineq_const()
     n_c = n_e + n_i
 
-    lmb = np.ones((n_c, 1))
+    lmb = np.zeros((n_c, 1))
     sgm = np.ones((n_c, 1))
 
     x = x0

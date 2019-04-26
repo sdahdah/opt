@@ -326,15 +326,6 @@ def _fd_grad(p, x, h=1e-8):
     return grad
 
 
-def _cone_condition(p, x, s, theta=89):
-    """Check the cone condition at a point"""
-
-    gx = p.grad(x)
-    cos_phi = (-gx @ s) / (np.linalg.norm(s) * np.linalg.norm(gx))
-    cos_theta = np.cos(theta * 2 * np.pi / 360)
-
-    return (cos_phi > cos_theta)
-
 def _fd_hessian(p, x, h=1e-8):
     """Finite different approximation of the Hessian"""
 
@@ -350,3 +341,13 @@ def _fd_hessian(p, x, h=1e-8):
                       + p.cost(x)) / h**2
 
     return 0.5 * (H + H.T)
+
+
+def _cone_condition(p, x, s, theta=89):
+    """Check the cone condition at a point"""
+
+    gx = p.grad(x)
+    cos_phi = (-gx @ s) / (np.linalg.norm(s) * np.linalg.norm(gx))
+    cos_theta = np.cos(theta * 2 * np.pi / 360)
+
+    return (cos_phi > cos_theta)

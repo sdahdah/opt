@@ -398,8 +398,11 @@ class TestBasicConstraints(unittest.TestCase):
         self.assertTrue(np.linalg.norm(x_opt - x) < 1e-4)
 
     def test_lag_new(self):
-        x0 = np.array([[-1], [0]])
-        x = opt.lagrange_newton(self.p, x0, tol=1e-6)
+        v = lambda x: 2 * x[0, 0] - 3 * x[1, 0]
+        c = [lambda x: x[0, 0]**2 + x[1, 0]**2 - 25]
+        p = opt.Problem(v, eq_const=c)
+        x0 = np.array([[-2.8], [4.2]])
+        x = opt.lagrange_newton(p, x0, tol_const=1e-6)
 
 
 if __name__ == '__main__':

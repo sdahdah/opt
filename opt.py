@@ -286,7 +286,7 @@ def augmented_lagrange(p, x0, tol=1e-6, tol_const=1e-6, sigma_max=1e12):
     return x
 
 
-def lagrange_newton(p, x0, tol=1e-6):
+def lagrange_newton(p, x0, tol_const=1e-6):
     """Constrained optimization algorithm using Lagrange-Newton method"""
 
     n_e = p.num_eq_const()
@@ -319,7 +319,18 @@ def lagrange_newton(p, x0, tol=1e-6):
     x = x0
     lmb = np.zeros((n_c, 1))
 
-    for i in range(0, 100):
+    c_e = p.eq_const(x)
+    c_i = p.ineq_const(x)
+
+    if c_e is not None and c_i is not None:
+        c = np.concatenate((c_e, c_i), axis=0)
+    elif c_e is not None:
+        c = c_e
+    elif c_i is not None:
+        c = c_i
+
+    while np.linalg.norm(c) > tol_const:
+
         KKT = np.block([
             [W(x, lmb), -A(x).T],
             [-A(x), np.zeros((n_c, n_c))]
@@ -327,25 +338,35 @@ def lagrange_newton(p, x0, tol=1e-6):
 
         if n_e != 0 and n_i != 0:
             f = np.block([
-                [-_fd_grad(p.cost, x).T],
+                [-_fd_grad(p.cost, x).T + A(x).T @ lmb],
                 [np.expand_dims(p.eq_const(x), axis=1)],
                 [np.expand_dims(p.ineq_const(x), axis=1)]
             ])
         elif n_e != 0:
             f = np.block([
-                [-_fd_grad(p.cost, x).T],
+                [-_fd_grad(p.cost, x).T + A(x).T @ lmb],
                 [np.expand_dims(p.eq_const(x), axis=1)]
             ])
         elif n_i != 0:
             f = np.block([
-                [-_fd_grad(p.cost, x).T],
+                [-_fd_grad(p.cost, x).T + A(x).T @ lmb],
                 [np.expand_dims(p.ineq_const(x), axis=1)]
             ])
 
         X = np.linalg.solve(KKT, f)
         dim = np.max(np.shape(x))
         x = x + X[:dim, :]
-        lmb = X[dim:, :]
+        lmb = lmb + X[dim:, :]
+
+        c_e = p.eq_const(x)
+        c_i = p.ineq_const(x)
+
+        if c_e is not None and c_i is not None:
+            c = np.concatenate((c_e, c_i), axis=0)
+        elif c_e is not None:
+            c = c_e
+        elif c_i is not None:
+            c = c_i
 
     return x
 

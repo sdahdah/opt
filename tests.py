@@ -6,7 +6,7 @@ import opt
 
 np.set_printoptions(precision=20)
 
-@unittest.skip("skip")
+@unittest.skip('')
 class TestProblemAGrad(unittest.TestCase):
 
     def setUp(self):
@@ -40,7 +40,7 @@ class TestProblemAGrad(unittest.TestCase):
         self.assertTrue(np.linalg.norm(x_opt - self.x_opt) < 1e-6)
 
 
-@unittest.skip("skip")
+@unittest.skip('')
 class TestProblemA(unittest.TestCase):
 
     def setUp(self):
@@ -73,7 +73,7 @@ class TestProblemA(unittest.TestCase):
         self.assertTrue(np.linalg.norm(x_opt - self.x_opt) < 1e-6)
 
 
-@unittest.skip("skip")
+@unittest.skip('')
 class TestProblemB(unittest.TestCase):
 
     def setUp(self):
@@ -98,7 +98,7 @@ class TestProblemB(unittest.TestCase):
         self.assertTrue(np.linalg.norm(x_opt - self.x_opt) < 1e-3)
 
 
-@unittest.skip("skip")
+@unittest.skip('')
 class TestProblemC(unittest.TestCase):
 
     def setUp(self):
@@ -128,6 +128,7 @@ class TestProblemC(unittest.TestCase):
         self.assertTrue(np.linalg.norm(x_opt - self.x_opt) < 1e-3)
 
 
+@unittest.skip('')
 class TestProblemD(unittest.TestCase):
 
     def setUp(self):
@@ -162,6 +163,7 @@ class TestProblemD(unittest.TestCase):
         self.assertTrue(np.linalg.norm(self.x_opt - x) < 1e-2)
 
 
+@unittest.skip('')
 class TestProblemE(unittest.TestCase):
 
     def setUp(self):
@@ -203,6 +205,7 @@ class TestProblemE(unittest.TestCase):
         # self.assertTrue(np.linalg.norm(self.x_opt - x) < 1e-2)
 
 
+@unittest.skip('')
 class TestProblemF(unittest.TestCase):
 
     def setUp(self):
@@ -242,7 +245,6 @@ class TestProblemF(unittest.TestCase):
         # TODO Not precise enough
         # self.assertTrue(np.linalg.norm(self.x_opt - x) < 1e-2)
 
-@unittest.skip("skip")
 class TestBasics(unittest.TestCase):
 
     def test_scalar_problem(self):
@@ -340,6 +342,15 @@ class TestBasics(unittest.TestCase):
         g_ex = p.grad(x)
         g_fd = opt._fd_grad(p, x, h=1e-9)
         self.assertTrue(np.linalg.norm(g_fd - g_ex) < 1e-3)
+
+    def test_ft_hessian(self):
+        P = np.array([[1, 0, 0], [0, 2, 0], [0, 0, 4]])
+        v = lambda x: 0.5 * x.T @ P @ x
+        del_v = lambda x: x.T @ P
+        p = opt.Problem(v, del_v)
+        x = np.array([[0], [0], [0]])
+        P_fd = opt._fd_hessian(p, x)
+        self.assertTrue(np.all((P_fd - P) < 1e-4))
 
 
 class TestBasicConstraints(unittest.TestCase):

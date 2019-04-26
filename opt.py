@@ -285,6 +285,11 @@ def augmented_lagrange(p, x0, tol=1e-6, tol_const=1e-6, sigma_max=1e12):
     return x
 
 
+def lagrange_newton(p, x0, tol=1e-6):
+    """Constrained optimization algorithm using Lagrange-Newton method"""
+    return 0
+
+
 def _step_size(p, x, s, gamma=1.5, mu=0.8):
     """Armijo algorithm for computing step size"""
 
@@ -311,7 +316,7 @@ def _step_size(p, x, s, gamma=1.5, mu=0.8):
     return w
 
 
-def _fd_grad(p, x, h=1e-6):
+def _fd_grad(p, x, h=1e-8):
     """Finite difference approximation of the gradient"""
 
     dim = np.max(np.shape(x))
@@ -329,3 +334,19 @@ def _cone_condition(p, x, s, theta=89):
     cos_theta = np.cos(theta * 2 * np.pi / 360)
 
     return (cos_phi > cos_theta)
+
+def _fd_hessian(p, x, h=1e-8):
+    """Finite different approximation of the Hessian"""
+
+    dim = np.max(np.shape(x))
+    I = np.eye(dim)
+    H = np.zeros((dim, dim))
+
+    for i in range(0, dim):
+        for j in range(0, dim):
+            H[i, j] =  (p.cost(x + h * I[:, [i]] + h * I[:, [j]]) \
+                      - p.cost(x + h * I[:, [i]]) \
+                      - p.cost(x + h * I[:, [j]]) \
+                      + p.cost(x)) / h**2
+
+    return 0.5 * (H + H.T)

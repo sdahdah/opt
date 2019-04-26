@@ -98,7 +98,6 @@ class TestProblemB(unittest.TestCase):
         self.assertTrue(np.linalg.norm(x_opt - self.x_opt) < 1e-3)
 
 
-@unittest.skip('')
 class TestProblemC(unittest.TestCase):
 
     def setUp(self):
@@ -112,16 +111,19 @@ class TestProblemC(unittest.TestCase):
         self.x_opt = np.array([[-0.01773056364041071], [-0.09577801844122487]])
         self.p = opt.Problem(v)
 
+    @unittest.skip('')
     def test_sd(self):
         x = np.array([[0], [0]])
         x_opt = opt.steepest_descent(self.p, x, tol=1e-4)
         self.assertTrue(np.linalg.norm(x_opt - self.x_opt) < 1e-3)
 
+    @unittest.skip('')
     def test_cg(self):
         x = np.array([[0], [0]])
         x_opt = opt.conjugate_gradient(self.p, x, tol=1e-4)
         self.assertTrue(np.linalg.norm(x_opt - self.x_opt) < 1e-3)
 
+    @unittest.skip('')
     def test_sec(self):
         x = np.array([[0], [0]])
         x_opt = opt.secant(self.p, x, tol=1e-4)
@@ -398,11 +400,14 @@ class TestBasicConstraints(unittest.TestCase):
         self.assertTrue(np.linalg.norm(x_opt - x) < 1e-4)
 
     def test_lag_new(self):
-        v = lambda x: 2 * x[0, 0] - 3 * x[1, 0]
+
+        P = np.array([[1, 0], [0, 2]])
+        v = lambda x: 0.5 * x.T @ P @ x
         c = [lambda x: x[0, 0]**2 + x[1, 0]**2 - 25]
         p = opt.Problem(v, eq_const=c)
-        x0 = np.array([[-2.8], [4.2]])
-        x = opt.lagrange_newton(p, x0, tol = 1e-4, tol_const=1e-4)
+
+        x0 = np.array([[1], [1]])
+        x = opt.lagrange_newton(p, x0, tol = 1e-2)
         print(x)
 
 

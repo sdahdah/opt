@@ -286,7 +286,7 @@ def augmented_lagrange(p, x0, tol=1e-6, tol_const=1e-6, sigma_max=1e12):
     return x
 
 
-def lagrange_newton(p, x0, tol=1e-6, tol_const=1e-6):
+def lagrange_newton(p, x0, tol=1e-6):
     """Constrained optimization algorithm using Lagrange-Newton method"""
 
     n_e = p.num_eq_const()
@@ -301,7 +301,8 @@ def lagrange_newton(p, x0, tol=1e-6, tol_const=1e-6):
             for i in range(0, n_e)]) 
         hess_c_i = - np.sum([lmb_i[i] * _fd_hessian(p.ineq_const()[i], x)
             for i in range(0, n_i)])
-        return hess_f + hess_c_e + hess_c_i
+        hess = hess_f + hess_c_e + hess_c_i
+        return hess
 
     def A(x):
         grad_e = np.array([np.squeeze(_fd_grad(p.eq_const()[i], x))
@@ -329,12 +330,15 @@ def lagrange_newton(p, x0, tol=1e-6, tol_const=1e-6):
     elif c_i is not None:
         c = c_i
 
-    while np.linalg.norm(_fd_grad(p.cost, x)) > tol or np.linalg.norm(c) > tol_const:
+    norm_L = 1e12
+
+    while norm_L  > tol:
 
         KKT = np.block([
             [W(x, lmb), -A(x).T],
             [-A(x), np.zeros((n_c, n_c))]
         ])
+
 
         if n_e != 0 and n_i != 0:
             f = np.block([
@@ -353,6 +357,7 @@ def lagrange_newton(p, x0, tol=1e-6, tol_const=1e-6):
                 [np.expand_dims(p.ineq_const(x), axis=1)]
             ])
 
+        x_prv = x
         X = np.linalg.solve(KKT, f)
         dim = np.max(np.shape(x))
         x = x + X[:dim, :]
@@ -367,6 +372,10 @@ def lagrange_newton(p, x0, tol=1e-6, tol_const=1e-6):
             c = c_e
         elif c_i is not None:
             c = c_i
+
+        norm_L = np.linalg.norm(x - x_prv)
+
+        print(x)
 
     return x
 

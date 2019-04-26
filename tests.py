@@ -340,7 +340,7 @@ class TestBasics(unittest.TestCase):
         p = opt.Problem(v, del_v)
         x = np.array([[1], [2], [3]])
         g_ex = p.grad(x)
-        g_fd = opt._fd_grad(p, x, h=1e-9)
+        g_fd = opt._fd_grad(p.cost, x, h=1e-9)
         self.assertTrue(np.linalg.norm(g_fd - g_ex) < 1e-3)
 
     def test_ft_hessian(self):
@@ -349,7 +349,7 @@ class TestBasics(unittest.TestCase):
         del_v = lambda x: x.T @ P
         p = opt.Problem(v, del_v)
         x = np.array([[0], [0], [0]])
-        P_fd = opt._fd_hessian(p, x)
+        P_fd = opt._fd_hessian(p.cost, x)
         self.assertTrue(np.all((P_fd - P) < 1e-4))
 
 

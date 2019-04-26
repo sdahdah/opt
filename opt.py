@@ -11,10 +11,10 @@ class Problem:
         # Check presence of gradient function
         if grad is None and grad_step is None:
             self._grad_step = 1e-8
-            self._grad = partial(_fd_grad, self, h=self._grad_step)
+            self._grad = partial(_fd_grad, self.cost, h=self._grad_step)
         elif grad is None and grad_step is not None:
             self._grad_step = grad_step
-            self._grad = partial(_fd_grad, self, h=self._grad_step)
+            self._grad = partial(_fd_grad, self.cost, h=self._grad_step)
         elif grad is not None:
             self._grad_step = None
             self._grad = grad
@@ -316,17 +316,17 @@ def _step_size(p, x, s, gamma=1.5, mu=0.8):
     return w
 
 
-def _fd_grad(p, x, h=1e-8):
+def _fd_grad(f, x, h=1e-8):
     """Finite difference approximation of the gradient"""
 
     dim = np.max(np.shape(x))
-    grad_gen = ((p.cost(x + h * np.eye(dim)[:, [i]]) - p.cost(x)) / h
+    grad_gen = ((f(x + h * np.eye(dim)[:, [i]]) - f(x)) / h
                for i in range(0, dim))
     grad = np.expand_dims(np.fromiter(grad_gen, np.float64), axis=0)
     return grad
 
 
-def _fd_hessian(p, x, h=1e-8):
+def _fd_hessian(f, x, h=1e-8):
     """Finite different approximation of the Hessian"""
 
     dim = np.max(np.shape(x))
@@ -335,10 +335,9 @@ def _fd_hessian(p, x, h=1e-8):
 
     for i in range(0, dim):
         for j in range(0, dim):
-            H[i, j] =  (p.cost(x + h * I[:, [i]] + h * I[:, [j]]) \
-                      - p.cost(x + h * I[:, [i]]) \
-                      - p.cost(x + h * I[:, [j]]) \
-                      + p.cost(x)) / h**2
+            H[i, j] =  (f(x + h * I[:, [i]] + h * I[:, [j]]) \
+                      - f(x + h * I[:, [i]]) - f(x + h * I[:, [j]]) \
+                      + f(x)) / h**2
 
     return 0.5 * (H + H.T)
 

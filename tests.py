@@ -196,8 +196,9 @@ class TestProblemE(unittest.TestCase):
         # self.assertTrue(np.linalg.norm(x - self.x_opt) < 1e-3)
 
     def test_aug_lag(self):
-        x0 = np.array([[1], [1]])
+        x0 = np.array([[10], [1]])
         x = opt.augmented_lagrange(self.p, x0, tol=1e-4, tol_const=1e-4)
+        print(x)
         # TODO Not precise enough
         # self.assertTrue(np.linalg.norm(self.x_opt - x) < 1e-2)
 
@@ -238,7 +239,6 @@ class TestProblemF(unittest.TestCase):
     def test_aug_lag(self):
         x0 = np.array([[2.1], [0.1]])
         x = opt.augmented_lagrange(self.p, x0, tol=1e-4, tol_const=1e-4)
-        print(x)
         # TODO Not precise enough
         # self.assertTrue(np.linalg.norm(self.x_opt - x) < 1e-2)
 

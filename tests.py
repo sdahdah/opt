@@ -143,10 +143,10 @@ class TestProblemC(unittest.TestCase):
 #         x = opt.barrier_function(self.p, x0, mode='inv')
 #         self.assertTrue(np.linalg.norm(x - self.x_opt) < 1e-3)
 
-    # def test_log_barrier_function(self, tol=1e-3, tol_const=1e-3):
-    #     x0 = np.array([[0.1], [0.1]])
-    #     x = opt.barrier_function(self.p, x0, mode='log')
-    #     self.assertTrue(np.linalg.norm(x - self.x_opt) < 1e-3)
+#     def test_log_barrier_function(self, tol=1e-3, tol_const=1e-3):
+#         x0 = np.array([[0.1], [0.1]])
+#         x = opt.barrier_function(self.p, x0, mode='log')
+#         self.assertTrue(np.linalg.norm(x - self.x_opt) < 1e-3)
 
 
 # class TestProblemE(unittest.TestCase):
@@ -328,6 +328,11 @@ class TestBasicConstraints(unittest.TestCase):
         p = opt.Problem(v, grad=del_v, eq_const=c)
         self.assertTrue(p.eq_const(4)[0] == 5)
         self.assertTrue(p.eq_const(4)[1] == 6)
+        self.assertEqual(p.num_eq_const(), 2)
+        self.assertEqual(p.num_ineq_const(), 0)
+        p = opt.Problem(v, grad=del_v, ineq_const=c)
+        self.assertEqual(p.num_eq_const(), 0)
+        self.assertEqual(p.num_ineq_const(), 2)
 
     def test_eq_const(self):
         x0 = np.array([[0], [0]])

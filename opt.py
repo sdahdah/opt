@@ -58,6 +58,18 @@ class Problem:
         else:
             return None
 
+    def num_eq_const(self):
+        if self._eq_const is not None:
+            return np.max(np.shape(self._eq_const))
+        else:
+            return 0
+
+    def num_ineq_const(self):
+        if self._ineq_const is not None:
+            return np.max(np.shape(self._ineq_const))
+        else:
+            return 0
+
 
 def steepest_descent(p, x, tol=1e-6, max_iter=999):
     """Steepest descent optimization algorithm"""
@@ -203,6 +215,24 @@ def barrier_function(p, x0, tol=1e-6, tol_const=1e-4, sigma_max=1e6, r_min=1e-6,
         r *= 0.1
 
     return x
+
+
+# def augmented_lagrange(p, x0, tol=1e-6):
+#     """Constrained optimization algorithm using augmented Lagrange method"""
+
+#     def phi(p, lmb, sgm, x):
+#         S = np.diagflat(sgm)
+#         cost = p.cost(x)
+#         if p.eq_const() is not None:
+#             eq_x = p.eq_const(x)
+#             n_eq = np.max(np.shape(eq_x))
+#             cost = cost - lmb.T @ eq_x + 0.5 * (eq_x.T @ S @ eq_x)
+#         if p.ineq_const() is not None:
+#             ineq_x = p.ineq_const(x)
+#             n_ineq = np.max(np.shape(ineq_x))
+#             cost = cost + 
+
+#         return cost
 
 
 def _step_size(p, x, s, gamma=1.5, mu=0.8):

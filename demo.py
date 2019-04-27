@@ -9,6 +9,7 @@ np.set_printoptions(precision=20, linewidth=120)
 class TestProblemAGrad(unittest.TestCase):
 
     def setUp(self):
+        # Set up problem
         a = 5
         b = np.array([[1], [4], [5], [4], [2], [1]])
         C = 2 * np.array([[9,  1,  7,  5,  4,  7],
@@ -20,21 +21,28 @@ class TestProblemAGrad(unittest.TestCase):
 
         v = lambda x : a + b.T @ x + 0.5 * x.T @ C @ x
         del_v = lambda x : b.T + x.T @ C
+        # Create problem object
         self.p = opt.Problem(v, del_v)
+        # Store known solution since this is a quadratic. Not used here
         self.x_opt = -np.linalg.solve(C, b)
 
     def test_sd(self):
+        # Pick initial value
         x = np.array([[0], [0], [0], [0], [0], [0]])
         start = time.time()
+        # Run steepest descent with history turned on (get x at each iteration)
         x_opt = opt.steepest_descent(self.p, x, hist=True)
         end = time.time()
+        # Calculate gradient at each iteration
         g = np.array([np.linalg.norm(self.p.grad(x_opt[i]))
             for i in range(len(x_opt))])
+        # Plot gradient and save figure
         fig = plt.figure()
         plt.plot(np.arange(len(x_opt)), g)
         plt.xlabel('Iteration')
         plt.ylabel('Norm of Gradient')
         fig.savefig('./fig/sd-pA-grad.eps', format='eps')
+        # Print out stats
         print('\nProblem A, Steepest Descent (Exact Gradient)')
         print('arg min v(x) =\n', x_opt[-1])
         print('time =\n', end - start, 's')
@@ -257,10 +265,14 @@ class TestProblemC(unittest.TestCase):
 class TestProblemD(unittest.TestCase):
 
     def setUp(self):
+        # Objective function
         v = lambda x: np.abs(x[0, 0] - 2) + np.abs(x[1, 0] - 2)
+        # Constraints
         h1 = lambda x: x[0, 0] - x[1, 0]**2
         h2 = lambda x: x[0, 0]**2 + x[1, 0]**2 - 1
+        # Create Problem with equality and inequality constraints in lists
         self.p = opt.Problem(v, eq_const=[h2], ineq_const=[h1])
+        # Known solution. Not used here
         self.x_opt = np.array([[np.sqrt(2)/2], [np.sqrt(2)/2]])
 
     def test_penalty_function(self, tol=1e-3, tol_const=1e-3):

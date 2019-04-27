@@ -7,15 +7,38 @@ class Problem:
 
     def __init__(self, cost, grad=None, grad_step=None,
                  eq_const=None, ineq_const=None):
+        """Constructor for Problem object
+
+        Creates a Problem object for use with optimization algorithms.
+
+        Parameters
+        ----------
+        cost : function whose input is 2D numpy column array
+            Objective function of problem
+        grad : function whose input is 2D numpy column array
+            Gradient function of problem. If not specified, finite difference
+            is used
+        grad_step : float
+            Step size for finite difference gradient. If not specified, (and
+            no analytic gradient is given) 1e-8 is used
+        eq_const : list of functions
+            List of functions that form equality constraints for problem
+        ineq_const : list of functions
+            List of functions that form inequality constraints for problem
+
+        """
         self._cost = cost
         # Check presence of gradient function
         if grad is None and grad_step is None:
+            # No gradient function, default step size
             self._grad_step = 1e-8
             self._grad = partial(_fd_grad, self.cost, h=self._grad_step)
         elif grad is None and grad_step is not None:
+            # No gradient function, specified step size
             self._grad_step = grad_step
             self._grad = partial(_fd_grad, self.cost, h=self._grad_step)
         elif grad is not None:
+            # Gradient given, no need for step size
             self._grad_step = None
             self._grad = grad
         # Check presence of constraints
@@ -29,18 +52,64 @@ class Problem:
             self._ineq_const = None
 
     def cost(self, x=None):
+        """Cost of Problem
+
+        If x is given, returns cost at x. Otherwise returns cost function.
+
+        Parameters
+        ----------
+        x : 2D numpy column array
+            Point at which to evaluate cost
+
+        Returns
+        -------
+        float or function
+            If x was given, returns cost at x. Otherwise returns cost function.
+        """
         if x is not None:
             return self._cost(x)
         else:
             return self._cost
 
     def grad(self, x=None):
+        """Gradient of Problem
+
+        If x is given, returns gradient at x. Otherwise returns gradient 
+        function.
+
+        Parameters
+        ----------
+        x : 2D numpy column array
+            Point at which to evaluate gradient
+
+        Returns
+        -------
+        2D numpy row array or function
+            If x was given, returns gradient at x. Otherwise returns gradient
+            function.
+        """
         if x is not None:
             return self._grad(x)
         else:
             return self._grad
 
     def eq_const(self, x=None):
+        """ Equality constraints of Problem
+
+        If x is given, returns column array of constraints evaluated
+        at x. Otherwise returns column array of functions.
+
+        Parameters
+        ----------
+        x : 2D numpy column array
+            Point at which to evaluate constraints
+
+        Returns
+        -------
+        2D numpy column array of floats or functions
+            If x was given, returns column array of costs at x. Otherwise
+            returns column array of functions
+        """
         if self._eq_const is not None:
             if x is not None:
                 return np.array([[eq(x)] for eq in self._eq_const])
@@ -50,6 +119,22 @@ class Problem:
             return None
 
     def ineq_const(self, x=None):
+        """ Inequality constraints of Problem
+
+        If x is given, returns column array of constraints evaluated
+        at x. Otherwise returns column array of functions.
+
+        Parameters
+        ----------
+        x : 2D numpy column array
+            Point at which to evaluate constraints
+
+        Returns
+        -------
+        2D numpy column array of floats or functions
+            If x was given, returns column array of costs at x. Otherwise
+            returns column array of functions
+        """
         if self._ineq_const is not None:
             if x is not None:
                 return np.array([[ineq(x)] for ineq in self._ineq_const])
@@ -59,12 +144,14 @@ class Problem:
             return None
 
     def num_eq_const(self):
+        """Returns number of equality constraints"""
         if self._eq_const is not None:
             return np.max(np.shape(self._eq_const))
         else:
             return 0
 
     def num_ineq_const(self):
+        """Returns number of inequality constraints"""
         if self._ineq_const is not None:
             return np.max(np.shape(self._ineq_const))
         else:
@@ -72,7 +159,30 @@ class Problem:
 
 
 def steepest_descent(p, x, tol=1e-6, max_iter=999, hist=False):
-    """Steepest descent optimization algorithm"""
+    """Steepest descent optimization algorithm
+
+    Parameters
+    ----------
+    p : Problem
+        Problem to minimize
+    x : 2D numpy column array of floats
+        Initial guess at minimum
+    tol : float
+        When norm of gradient goes below this value, iteration stops
+    max_iter : int
+        Absolute maximum number of iterations before giving up and returning x
+    hist : bool
+        If True, returns array with value of x at every iteration. If False,
+        just returns last x value.o
+
+    Returns
+    -------
+    2D or 3D numpy column array of floats
+        If hist is False, returns 2D numpy colmn array containing minimizing
+        x of problem. Otherwise returns a 3D numpy array containing every
+        value of x along the way.
+
+    """
 
     i = 0
     x_hist = []
@@ -89,7 +199,33 @@ def steepest_descent(p, x, tol=1e-6, max_iter=999, hist=False):
 
 
 def conjugate_gradient(p, x, tol=1e-6, rst_iter=99, max_iter=999, hist=False):
-    """Conjugate gradient optimization algorithm"""
+    """Conjugate gradient optimization algorithm
+
+    Parameters
+    ----------
+    p : Problem
+        Problem to minimize
+    x : 2D numpy column array of floats
+        Initial guess at minimum
+    tol : float
+        When norm of gradient goes below this value, iteration stops
+    rst_iter : int
+        Number of iterations to go before stopping iteration, resetting search
+        direction to gradient, and restarting
+    max_iter : int
+        Absolute maximum number of iterations before giving up and returning x
+    hist : bool
+        If True, returns array with value of x at every iteration. If False,
+        just returns last x value.o
+
+    Returns
+    -------
+    2D or 3D numpy column array of floats
+        If hist is False, returns 2D numpy colmn array containing minimizing
+        x of problem. Otherwise returns a 3D numpy array containing every
+        value of x along the way.
+
+    """
 
     i = 0
     x_hist = []
@@ -116,7 +252,35 @@ def conjugate_gradient(p, x, tol=1e-6, rst_iter=99, max_iter=999, hist=False):
 
 
 def secant(p, x, tol=1e-6, H=None, rst_iter=99, max_iter=999, hist=False):
-    """Secant optimization algorithm"""
+    """Secant optimization algorithm
+
+    Parameters
+    ----------
+    p : Problem
+        Problem to minimize
+    x : 2D numpy column array of floats
+        Initial guess at minimum
+    tol : float
+        When norm of gradient goes below this value, iteration stops
+    H : 2D numpy matrix
+        Initial guess at Hessian if you have one. If not, it's set to identity
+    rst_iter : int
+        Number of iterations to go before stopping iteration, resetting search
+        direction to gradient, and restarting
+    max_iter : int
+        Absolute maximum number of iterations before giving up and returning x
+    hist : bool
+        If True, returns array with value of x at every iteration. If False,
+        just returns last x value.o
+
+    Returns
+    -------
+    2D or 3D numpy column array of floats
+        If hist is False, returns 2D numpy colmn array containing minimizing
+        x of problem. Otherwise returns a 3D numpy array containing every
+        value of x along the way.
+
+    """
 
     if H is None:
         H = np.eye(np.max(np.shape(x)))
@@ -148,7 +312,33 @@ def secant(p, x, tol=1e-6, H=None, rst_iter=99, max_iter=999, hist=False):
 
 
 def penalty_function(p, x0, tol=1e-6, tol_const=1e-4, sigma_max=1e6, hist=False):
-    """Constrained optimization algorithm using penalty function"""
+    """Constrained optimization algorithm using penalty function
+
+    Parameters
+    ----------
+    p : Problem
+        Problem to minimize (needs constraints)
+    x0 : 2D numpy column array of floats
+        Initial guess at minimum
+    tol : float
+        When norm of gradient goes below this value, unconstrained iteration
+        stops
+    tol_const : float
+        When norm of costs goes below this value, iteration stops
+    sigma_max : float
+        Maximum value of sigma before iteration stops
+    hist : bool
+        If True, returns array with value of x at every iteration. If False,
+        just returns last x value.o
+
+    Returns
+    -------
+    2D or 3D numpy column array of floats
+        If hist is False, returns 2D numpy colmn array containing minimizing
+        x of problem. Otherwise returns a 3D numpy array containing every
+        value of x along the way.
+
+    """
 
     def phi(p, sigma, x):
         cost = p.cost(x)
@@ -187,7 +377,40 @@ def penalty_function(p, x0, tol=1e-6, tol_const=1e-4, sigma_max=1e6, hist=False)
 
 def barrier_function(p, x0, tol=1e-6, tol_const=1e-4, sigma_max=1e6,
                      r_min=1e-6, mode='inv', hist=False):
-    """Constrained optimization algorithm using barrier function"""
+    """Constrained optimization algorithm using barrier function
+
+    Logarithmic barrier function does not seem to work properly. Use inverse.
+
+    Parameters
+    ----------
+    p : Problem
+        Problem to minimize (needs constraints)
+    x0 : 2D numpy column array of floats
+        Initial guess at minimum
+    tol : float
+        When norm of gradient goes below this value, unconstrained iteration
+        stops
+    tol_const : float
+        When norm of costs goes below this value, iteration stops
+    sigma_max : float
+        Maximum value of sigma before iteration stops
+    r_min : float
+        Minimum value of r before iteration stops
+    mode: string
+        Either 'inv' for inverse barrier function or 'log' for logarithmic
+        barrier function
+    hist : bool
+        If True, returns array with value of x at every iteration. If False,
+        just returns last x value.o
+
+    Returns
+    -------
+    2D or 3D numpy column array of floats
+        If hist is False, returns 2D numpy colmn array containing minimizing
+        x of problem. Otherwise returns a 3D numpy array containing every
+        value of x along the way.
+
+    """
 
     def phi(p, sigma, r, x):
         cost = p.cost(x)
@@ -229,7 +452,33 @@ def barrier_function(p, x0, tol=1e-6, tol_const=1e-4, sigma_max=1e6,
 
 
 def augmented_lagrange(p, x0, tol=1e-6, tol_const=1e-6, sigma_max=1e12, hist=False):
-    """Constrained optimization algorithm using augmented Lagrange method"""
+    """Constrained optimization algorithm using augmented Lagrange method
+
+    Parameters
+    ----------
+    p : Problem
+        Problem to minimize (needs constraints)
+    x0 : 2D numpy column array of floats
+        Initial guess at minimum
+    tol : float
+        When norm of gradient goes below this value, unconstrained iteration
+        stops
+    tol_const : float
+        When norm of costs goes below this value, iteration stops
+    sigma_max : float
+        Maximum value of sigma before iteration stops
+    hist : bool
+        If True, returns array with value of x at every iteration. If False,
+        just returns last x value.o
+
+    Returns
+    -------
+    2D or 3D numpy column array of floats
+        If hist is False, returns 2D numpy colmn array containing minimizing
+        x of problem. Otherwise returns a 3D numpy array containing every
+        value of x along the way.
+
+    """
 
     def phi(p, lmb, sgm, x):
         cost = p.cost(x)
@@ -300,7 +549,29 @@ def augmented_lagrange(p, x0, tol=1e-6, tol_const=1e-6, sigma_max=1e12, hist=Fal
 
 
 def lagrange_newton(p, x0, tol=1e-6, hist=False):
-    """Constrained optimization algorithm using Lagrange-Newton method"""
+    """Constrained optimization algorithm using Lagrange-Newton method
+
+    Parameters
+    ----------
+    p : Problem
+        Problem to minimize (needs constraints)
+    x0 : 2D numpy column array of floats
+        Initial guess at minimum
+    tol : float
+        When norm of gradient goes below this value, unconstrained iteration
+        stops
+    hist : bool
+        If True, returns array with value of x at every iteration. If False,
+        just returns last x value.o
+
+    Returns
+    -------
+    2D or 3D numpy column array of floats
+        If hist is False, returns 2D numpy colmn array containing minimizing
+        x of problem. Otherwise returns a 3D numpy array containing every
+        value of x along the way.
+
+    """
 
     x_hist = []
 
@@ -345,9 +616,9 @@ def lagrange_newton(p, x0, tol=1e-6, hist=False):
     elif c_i is not None:
         c = c_i
 
-    norm_L = 1e12
+    delta_x = 1e12
 
-    while norm_L  > tol:
+    while delta_x  > tol:
 
         KKT = np.block([
             [W(x, lmb), -A(x).T],
@@ -389,13 +660,26 @@ def lagrange_newton(p, x0, tol=1e-6, hist=False):
         elif c_i is not None:
             c = c_i
 
-        norm_L = np.linalg.norm(x - x_prv)
+        delta_x = np.linalg.norm(x - x_prv)
 
     return x if not hist else np.array(x_hist)
 
 
 def _step_size(p, x, s, gamma=1.5, mu=0.8):
-    """Armijo algorithm for computing step size"""
+    """Armijo algorithm for computing step size
+
+    Parameters
+    ----------
+    gamma : float
+        Parameter for increasing step size
+    mu : float
+        Parameter for decreasing step size
+
+    Returns
+    -------
+    float
+        Step size
+    """
 
     w = 1  # Default step size
 
@@ -421,7 +705,22 @@ def _step_size(p, x, s, gamma=1.5, mu=0.8):
 
 
 def _fd_grad(f, x, h=1e-8):
-    """Finite difference approximation of the gradient"""
+    """Finite difference approximation of the gradient
+
+    Parameters
+    ----------
+    f : function of x (2D numpy column array)
+        Function whose gradient you want to evaluate
+    x : 2D numpy column array
+        Point where you want to evaluate the gradient
+    h : float
+        Step size
+
+    Returns
+    -------
+    2D numpy row array
+        Gradient (which is a row vector)
+    """
 
     dim = np.max(np.shape(x))
     grad_gen = ((f(x + h * np.eye(dim)[:, [i]]) - f(x)) / h
@@ -431,7 +730,22 @@ def _fd_grad(f, x, h=1e-8):
 
 
 def _fd_hessian(f, x, h=1e-8):
-    """Finite different approximation of the Hessian"""
+    """Finite different approximation of the Hessian
+
+    Parameters
+    ----------
+    f : function of x (2D numpy column array)
+        Function whose Hessian you want to evaluate
+    x : 2D numpy column array
+        Point where you want to evaluate the Hessian
+    h : float
+        Step size
+
+    Returns
+    -------
+    2D numpy matrixx
+        Hessian matrix
+    """
 
     dim = np.max(np.shape(x))
     I = np.eye(dim)
@@ -447,7 +761,24 @@ def _fd_hessian(f, x, h=1e-8):
 
 
 def _cone_condition(p, x, s, theta=89):
-    """Check the cone condition at a point"""
+    """Check the cone condition at a point
+
+    Parameters
+    ----------
+    p : Problem
+        Problem you're minimizing
+    x : 2D numpy column array
+        Point where you want to check cone condition
+    s : 2D numpy column matrix
+        Search direction
+    theta : float
+        Acceptable angle with gradient (degrees)
+
+    Returns
+    -------
+    bool
+        Returns True if s is within theta degrees of the gradient at x
+    """
 
     gx = p.grad(x)
     cos_phi = (-gx @ s) / (np.linalg.norm(s) * np.linalg.norm(gx))

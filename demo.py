@@ -6,6 +6,7 @@ import opt
 
 np.set_printoptions(precision=20, linewidth=120)
 
+@unittest.skip('Test EQ')
 class TestProblemAGrad(unittest.TestCase):
 
     def setUp(self):
@@ -72,6 +73,7 @@ class TestProblemAGrad(unittest.TestCase):
         print('time =\n', end - start, 's')
 
 
+@unittest.skip('Test EQ')
 class TestProblemA(unittest.TestCase):
 
     def setUp(self):
@@ -137,6 +139,7 @@ class TestProblemA(unittest.TestCase):
         print('time =\n', end - start, 's')
 
 
+@unittest.skip('Test EQ')
 class TestProblemB(unittest.TestCase):
 
     def setUp(self):
@@ -194,6 +197,7 @@ class TestProblemB(unittest.TestCase):
         print('time =\n', end - start, 's')
 
 
+@unittest.skip('Test EQ')
 class TestProblemC(unittest.TestCase):
 
     def setUp(self):
@@ -254,6 +258,7 @@ class TestProblemC(unittest.TestCase):
         print('time =\n', end - start, 's')
 
 
+@unittest.skip('Test EQ')
 class TestProblemD(unittest.TestCase):
 
     def setUp(self):
@@ -346,6 +351,7 @@ class TestProblemD(unittest.TestCase):
         print(x_opt)
 
 
+@unittest.skip('Test EQ')
 class TestProblemE(unittest.TestCase):
 
     def setUp(self):
@@ -455,6 +461,106 @@ class TestProblemF(unittest.TestCase):
         x0 = np.array([[0.7], [0.7]])
         x_opt = opt.lagrange_newton(self.p, x0, tol=1e-4)
         print(x_opt)
+
+###############################################################################
+
+class TestProblemDEq(unittest.TestCase):
+
+    def setUp(self):
+        v = lambda x: np.abs(x[0, 0] - 2) + np.abs(x[1, 0] - 2)
+        h1 = lambda x: x[0, 0] - x[1, 0]**2
+        h2 = lambda x: x[0, 0]**2 + x[1, 0]**2 - 1
+        self.p = opt.Problem(v, eq_const=[h2, h1])
+        self.x_opt = np.array([[np.sqrt(2)/2], [np.sqrt(2)/2]])
+
+    def test_aug_lag(self):
+        x0 = np.array([[0], [1]])
+        start = time.time()
+        x_opt = opt.augmented_lagrange(self.p, x0, tol=1e-4, tol_const=1e-4, hist=True)
+        end = time.time()
+        g = np.array([np.linalg.norm(self.p.grad(x_opt[i]))
+            for i in range(len(x_opt))])
+        c_e = np.array([np.linalg.norm(self.p.eq_const(x_opt[i]))
+            for i in range(len(x_opt))])
+        fig = plt.figure()
+        plt.plot(np.arange(len(x_opt)), g, label='Gradient Norm')
+        plt.plot(np.arange(len(x_opt)), c_e, label='Equality Constraint Norm')
+        plt.xticks(np.arange(len(x_opt)))
+        plt.xlabel('Iteration')
+        plt.legend()
+        fig.savefig('./fig/al-pDEq.eps', format='eps')
+        print('\nProblem D-Eq, Augmented Lagrange')
+        print('arg min v(x) =\n', x_opt[-1])
+        print('time =\n', end - start, 's')
+
+    def test_lag_new(self):
+        x0 = np.array([[0.7], [0.7]])
+        start = time.time()
+        x_opt = opt.lagrange_newton(self.p, x0, tol=1e-4, hist=True)
+        end = time.time()
+        g = np.array([np.linalg.norm(self.p.grad(x_opt[i]))
+            for i in range(len(x_opt))])
+        c_e = np.array([np.linalg.norm(self.p.eq_const(x_opt[i]))
+            for i in range(len(x_opt))])
+        fig = plt.figure()
+        plt.plot(np.arange(len(x_opt)), g, label='Gradient Norm')
+        plt.plot(np.arange(len(x_opt)), c_e, label='Equality Constraint Norm')
+        plt.xticks(np.arange(len(x_opt)))
+        plt.xlabel('Iteration')
+        plt.legend()
+        fig.savefig('./fig/ln-pDEq.eps', format='eps')
+        print('\nProblem D-Eq, Lagrange-Newton')
+        print('arg min v(x) =\n', x_opt[-1])
+        print('time =\n', end - start, 's')
+
+
+class TestProblemEEq(unittest.TestCase):
+
+    def setUp(self):
+        v = lambda x: -x[0, 0] * x[1, 0]
+        h1 = lambda x: -x[0, 0] - x[1, 0]**2 + 1
+        h2 = lambda x: x[0, 0] + x[1, 0]
+        self.p = opt.Problem(v, eq_const=[h1])
+
+    def test_aug_lag(self):
+        x0 = np.array([[1], [1]])
+        start = time.time()
+        x_opt = opt.augmented_lagrange(self.p, x0, tol=1e-4, tol_const=1e-4, hist=True)
+        end = time.time()
+        g = np.array([np.linalg.norm(self.p.grad(x_opt[i]))
+            for i in range(len(x_opt))])
+        c_e = np.array([np.linalg.norm(np.minimum(self.p.eq_const(x_opt[i]), 0))
+            for i in range(len(x_opt))])
+        fig = plt.figure()
+        plt.plot(np.arange(len(x_opt)), g, label='Gradient Norm')
+        plt.plot(np.arange(len(x_opt)), c_e, label='equality Constraint Norm')
+        plt.xticks(np.arange(len(x_opt)))
+        plt.xlabel('Iteration')
+        plt.legend()
+        fig.savefig('./fig/al-pEEq.eps', format='eps')
+        print('\nProblem E-Eq, Augmented Lagrange')
+        print('arg min v(x) =\n', x_opt[-1])
+        print('time =\n', end - start, 's')
+
+    def test_lag_new(self):
+        x0 = np.array([[0.7], [0.7]])
+        start = time.time()
+        x_opt = opt.lagrange_newton(self.p, x0, tol=1e-4, hist=True)
+        end = time.time()
+        g = np.array([np.linalg.norm(self.p.grad(x_opt[i]))
+            for i in range(len(x_opt))])
+        c_e = np.array([np.linalg.norm(np.minimum(self.p.eq_const(x_opt[i]), 0))
+            for i in range(len(x_opt))])
+        fig = plt.figure()
+        plt.plot(np.arange(len(x_opt)), g, label='Gradient Norm')
+        plt.plot(np.arange(len(x_opt)), c_e, label='equality Constraint Norm')
+        plt.xticks(np.arange(len(x_opt)))
+        plt.xlabel('Iteration')
+        plt.legend()
+        fig.savefig('./fig/ln-pEEq.eps', format='eps')
+        print('\nProblem E-Eq, Lagrange-Newton')
+        print('arg min v(x) =\n', x_opt[-1])
+        print('time =\n', end - start, 's')
 
 
 if __name__ == '__main__':

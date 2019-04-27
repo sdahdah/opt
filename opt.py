@@ -481,6 +481,7 @@ def augmented_lagrange(p, x0, tol=1e-6, tol_const=1e-6, sigma_max=1e12, hist=Fal
     """
 
     def phi(p, lmb, sgm, x):
+        """Unconstrained problem"""
         cost = p.cost(x)
 
         n_e = p.num_eq_const()
@@ -519,14 +520,15 @@ def augmented_lagrange(p, x0, tol=1e-6, tol_const=1e-6, sigma_max=1e12, hist=Fal
     c = 1e12 * np.ones((n_c, 1))
 
     while np.linalg.norm(c) > tol_const:
+        # Create new problem to solve, but unconstrained
         up = Problem(partial(phi, p, lmb, sgm))
         x_hist.append(x)
         x = steepest_descent(up, x0, tol=tol)
 
+        # Concatenate costs
         c_prv = c
         c_e = p.eq_const(x)
         c_i = p.ineq_const(x)
-
         if c_e is not None and c_i is not None:
             c = np.concatenate((c_e, c_i), axis=0)
         elif c_e is not None:
@@ -534,9 +536,11 @@ def augmented_lagrange(p, x0, tol=1e-6, tol_const=1e-6, sigma_max=1e12, hist=Fal
         elif c_i is not None:
             c = c_i
 
+        # Make sure sigma is not too big
         if any(sgm >= sigma_max):
             break
 
+        # Update sigma
         if np.linalg.norm(c, np.inf) > 0.25 * np.linalg.norm(c_prv, np.inf):
             for i in range(0, n_c):
                 if np.abs(c[i]) > 0.25 * np.linalg.norm(c_prv, np.inf):
@@ -606,9 +610,9 @@ def lagrange_newton(p, x0, tol=1e-6, hist=False):
     x = x0
     lmb = np.zeros((n_c, 1))
 
+    # Concatenate costs
     c_e = p.eq_const(x)
     c_i = p.ineq_const(x)
-
     if c_e is not None and c_i is not None:
         c = np.concatenate((c_e, c_i), axis=0)
     elif c_e is not None:
@@ -620,12 +624,13 @@ def lagrange_newton(p, x0, tol=1e-6, hist=False):
 
     while delta_x  > tol:
 
+        # Compute KKT matrix
         KKT = np.block([
             [W(x, lmb), -A(x).T],
             [-A(x), np.zeros((n_c, n_c))]
         ])
 
-
+        # Compute gradient augmented with constraints
         if n_e != 0 and n_i != 0:
             f = np.block([
                 [-_fd_grad(p.cost, x).T + A(x).T @ lmb],
@@ -644,9 +649,11 @@ def lagrange_newton(p, x0, tol=1e-6, hist=False):
             ])
 
         x_prv = x
+        # Invert KKT matrix to get x and lambda increments
         X = np.linalg.solve(KKT, f)
         dim = np.max(np.shape(x))
         x_hist.append(x)
+        # Apply x and lambda increments
         x = x + X[:dim, :]
         lmb = lmb + X[dim:, :]
 
@@ -660,6 +667,7 @@ def lagrange_newton(p, x0, tol=1e-6, hist=False):
         elif c_i is not None:
             c = c_i
 
+        # Check distance from previous x
         delta_x = np.linalg.norm(x - x_prv)
 
     return x if not hist else np.array(x_hist)

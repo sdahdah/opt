@@ -6,7 +6,6 @@ import opt
 
 np.set_printoptions(precision=20, linewidth=120)
 
-@unittest.skip('Test EQ')
 class TestProblemAGrad(unittest.TestCase):
 
     def setUp(self):
@@ -73,7 +72,6 @@ class TestProblemAGrad(unittest.TestCase):
         print('time =\n', end - start, 's')
 
 
-@unittest.skip('Test EQ')
 class TestProblemA(unittest.TestCase):
 
     def setUp(self):
@@ -139,7 +137,6 @@ class TestProblemA(unittest.TestCase):
         print('time =\n', end - start, 's')
 
 
-@unittest.skip('Test EQ')
 class TestProblemB(unittest.TestCase):
 
     def setUp(self):
@@ -197,7 +194,6 @@ class TestProblemB(unittest.TestCase):
         print('time =\n', end - start, 's')
 
 
-@unittest.skip('Test EQ')
 class TestProblemC(unittest.TestCase):
 
     def setUp(self):
@@ -258,7 +254,6 @@ class TestProblemC(unittest.TestCase):
         print('time =\n', end - start, 's')
 
 
-@unittest.skip('Test EQ')
 class TestProblemD(unittest.TestCase):
 
     def setUp(self):
@@ -351,7 +346,6 @@ class TestProblemD(unittest.TestCase):
         print(x_opt)
 
 
-@unittest.skip('Test EQ')
 class TestProblemE(unittest.TestCase):
 
     def setUp(self):

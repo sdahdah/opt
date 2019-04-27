@@ -513,7 +513,6 @@ class TestProblemEEq(unittest.TestCase):
     def setUp(self):
         v = lambda x: -x[0, 0] * x[1, 0]
         h1 = lambda x: -x[0, 0] - x[1, 0]**2 + 1
-        h2 = lambda x: x[0, 0] + x[1, 0]
         self.p = opt.Problem(v, eq_const=[h1])
 
     def test_aug_lag(self):

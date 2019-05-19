@@ -74,7 +74,7 @@ class Problem:
     def grad(self, x=None):
         """Gradient of Problem
 
-        If x is given, returns gradient at x. Otherwise returns gradient 
+        If x is given, returns gradient at x. Otherwise returns gradient
         function.
 
         Parameters
